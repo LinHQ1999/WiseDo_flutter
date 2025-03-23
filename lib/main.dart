@@ -2,7 +2,17 @@ import 'package:flutter/material.dart';
 
 void main() => runApp(MyApp());
 
-class MyApp extends StatelessWidget {
+class MyApp extends StatefulWidget {
+  @override
+  _MyAppState createState() => _MyAppState();
+}
+
+class _MyAppState extends State<MyApp> {
+  // Track completed state for each task
+  final Map<String, bool> _taskCompletion = {
+    '准备下午的项目演示': false,
+    '回复张总邮件': false,
+  };
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
@@ -128,15 +138,18 @@ class MyApp extends StatelessWidget {
     String? priority,
     bool isPriority = false,
   }) {
+    final isCompleted = _taskCompletion[title] ?? false;
     return Padding(
       padding: const EdgeInsets.symmetric(vertical: 8),
       child: Row(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Checkbox(
-            value: false,
+            value: isCompleted,
             onChanged: (value) {
-              // TODO: Handle checkbox state
+              setState(() {
+                _taskCompletion[title] = value ?? false;
+              });
             },
             materialTapTargetSize: MaterialTapTargetSize.shrinkWrap,
             visualDensity: VisualDensity.compact,
@@ -151,6 +164,7 @@ class MyApp extends StatelessWidget {
                   style: TextStyle(
                     fontSize: 16,
                     color: isPriority ? Colors.red : Colors.black,
+                    decoration: isCompleted ? TextDecoration.lineThrough : null,
                   ),
                 ),
                 if (time != null) ...[
