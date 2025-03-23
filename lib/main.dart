@@ -6,6 +6,9 @@ class MyApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
+      theme: ThemeData(
+        fontFamily: '微软雅黑',
+      ),
       home: Scaffold(
         appBar: AppBar(title: const Text('日程助手')),
         body: SingleChildScrollView(
