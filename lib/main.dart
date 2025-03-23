@@ -133,10 +133,13 @@ class MyApp extends StatelessWidget {
       child: Row(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Icon(
-            Icons.circle,
-            size: 8,
-            color: isPriority ? Colors.red : Colors.grey,
+          Checkbox(
+            value: false,
+            onChanged: (value) {
+              // TODO: Handle checkbox state
+            },
+            materialTapTargetSize: MaterialTapTargetSize.shrinkWrap,
+            visualDensity: VisualDensity.compact,
           ),
           const SizedBox(width: 12),
           Expanded(
