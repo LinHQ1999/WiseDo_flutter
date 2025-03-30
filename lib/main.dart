@@ -1,41 +1,86 @@
 import 'package:flutter/material.dart';
+import 'constants/app_theme.dart';
+import 'screens/home_screen.dart';
+import 'screens/quadrant_screen.dart';
+import 'screens/stats_screen.dart';
+import 'screens/settings_screen.dart';
 
-void main() => runApp(MyApp());
+/// 应用入口
+void main() => runApp(const MyApp());
 
+/// 应用主类
 class MyApp extends StatefulWidget {
+  /// 构造函数
+  const MyApp({Key? key}) : super(key: key);
+
   @override
   _MyAppState createState() => _MyAppState();
 }
 
+/// 应用主类状态
 class _MyAppState extends State<MyApp> {
+  /// 当前选中的页面索引
+  int _currentIndex = 0;
+  
   // Track completed state for each task
   final Map<String, bool> _taskCompletion = {
     '准备下午的项目演示': false,
     '回复张总邮件': false,
   };
+
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
-      theme: ThemeData(
-        fontFamily: '微软雅黑',
-      ),
+      title: '日程助手',
+      theme: AppTheme.buildTheme(),
       home: Scaffold(
         appBar: AppBar(title: const Text('日程助手')),
-        body: SingleChildScrollView(
-          padding: const EdgeInsets.all(16),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              _buildHeader(),
-              const SizedBox(height: 24),
-              _buildPrioritySection(),
-              const SizedBox(height: 24),
-              _buildTaskSection(),
-            ],
-          ),
+        body: _buildBody(),
+        bottomNavigationBar: BottomNavigationBar(
+          currentIndex: _currentIndex,
+          type: BottomNavigationBarType.fixed,
+          onTap: (index) {
+            setState(() {
+              _currentIndex = index;
+            });
+          },
+          items: const [
+            BottomNavigationBarItem(
+              icon: Icon(Icons.home),
+              label: '首页',
+            ),
+            BottomNavigationBarItem(
+              icon: Icon(Icons.grid_4x4),
+              label: '四象限',
+            ),
+            BottomNavigationBarItem(
+              icon: Icon(Icons.insert_chart),
+              label: '统计',
+            ),
+            BottomNavigationBarItem(
+              icon: Icon(Icons.settings),
+              label: '设置',
+            ),
+          ],
         ),
       ),
     );
+  }
+
+  /// 根据当前选中的索引返回对应的页面内容
+  Widget _buildBody() {
+    switch (_currentIndex) {
+      case 0:
+        return const HomeScreen();
+      case 1:
+        return const QuadrantScreen();
+      case 2:
+        return const StatsScreen();
+      case 3:
+        return const SettingsScreen();
+      default:
+        return const HomeScreen();
+    }
   }
 
   Widget _buildHeader() {
