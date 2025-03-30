@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 import '../constants/app_theme.dart';
 
 /// 头部信息组件
@@ -26,16 +27,17 @@ class HeaderWidget extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!; // 获取本地化实例
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Text(
-          '嗨，$userName',
+          l10n.helloUser(userName), // 使用本地化字符串
           style: AppTheme.headerStyle,
         ),
         const SizedBox(height: 8),
         Text(
-          dateString,
+          l10n.dateInfo(dateString), // 使用本地化字符串
           style: AppTheme.subtitleStyle,
         ),
         const SizedBox(height: 8),
@@ -44,12 +46,12 @@ class HeaderWidget extends StatelessWidget {
             const Icon(Icons.cloud, size: 18),
             const SizedBox(width: 4),
             Text(
-              weatherInfo,
+              l10n.weatherInfo(weatherInfo), // 使用本地化字符串
               style: AppTheme.subtitleStyle,
             ),
             const SizedBox(width: 8),
             Text(
-              clothingSuggestion,
+              l10n.clothingSuggestion(clothingSuggestion), // 使用本地化字符串
               style: AppTheme.highlightStyle,
             ),
           ],

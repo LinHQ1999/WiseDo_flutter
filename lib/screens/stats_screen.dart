@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 import '../constants/app_theme.dart';
 
 /// 统计屏幕
@@ -8,33 +9,34 @@ class StatsScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
     return Padding(
       padding: const EdgeInsets.all(16.0),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Text(
-            '任务统计',
+            l10n.statsTitle,
             style: AppTheme.headerStyle,
           ),
           const SizedBox(height: 24),
-          _buildStatCard('本周完成任务', '12', Colors.blue),
+          _buildStatCard(l10n.statsWeeklyCompleted, '12', Colors.blue),
           const SizedBox(height: 16),
-          _buildStatCard('本月完成任务', '45', Colors.green),
+          _buildStatCard(l10n.statsMonthlyCompleted, '45', Colors.green),
           const SizedBox(height: 16),
-          _buildStatCard('待完成任务', '5', Colors.orange),
+          _buildStatCard(l10n.statsPending, '5', Colors.orange),
           const SizedBox(height: 24),
-          const Center(
+          Center(
             child: Text(
-              '统计功能完整实现开发中...',
-              style: TextStyle(
+              l10n.statsUnderDevelopment,
+              style: const TextStyle(
                 fontSize: 14,
                 fontStyle: FontStyle.italic,
               ),
             ),
           ),
           const SizedBox(height: 24),
-          _buildCompletionRateCard(),
+          _buildCompletionRateCard(context),
         ],
       ),
     );
@@ -76,7 +78,8 @@ class StatsScreen extends StatelessWidget {
   }
 
   /// 构建完成率卡片
-  Widget _buildCompletionRateCard() {
+  Widget _buildCompletionRateCard(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
     return Card(
       elevation: 2.0,
       child: Padding(
@@ -84,9 +87,9 @@ class StatsScreen extends StatelessWidget {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            const Text(
-              '任务完成率',
-              style: TextStyle(
+            Text(
+              l10n.statsCompletionRate,
+              style: const TextStyle(
                 fontSize: 18,
                 fontWeight: FontWeight.bold,
               ),
@@ -95,9 +98,9 @@ class StatsScreen extends StatelessWidget {
             Row(
               mainAxisAlignment: MainAxisAlignment.spaceAround,
               children: [
-                _buildProgressIndicator('今日', 0.75, Colors.blue),
-                _buildProgressIndicator('本周', 0.60, Colors.green),
-                _buildProgressIndicator('本月', 0.85, Colors.purple),
+                _buildProgressIndicator(l10n.statsToday, 0.75, Colors.blue),
+                _buildProgressIndicator(l10n.statsThisWeek, 0.60, Colors.green),
+                _buildProgressIndicator(l10n.statsThisMonth, 0.85, Colors.purple),
               ],
             ),
           ],

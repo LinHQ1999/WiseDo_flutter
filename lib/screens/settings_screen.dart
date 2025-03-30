@@ -1,10 +1,14 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 import '../constants/app_theme.dart';
 
 /// 设置屏幕
 class SettingsScreen extends StatefulWidget {
+  /// 语言更改回调
+  final Function(Locale) onLanguageChanged;
+
   /// 构造函数
-  const SettingsScreen({Key? key}) : super(key: key);
+  const SettingsScreen({Key? key, required this.onLanguageChanged}) : super(key: key);
 
   @override
   State<SettingsScreen> createState() => _SettingsScreenState();
@@ -15,24 +19,38 @@ class _SettingsScreenState extends State<SettingsScreen> {
   bool _notificationsEnabled = true;
   bool _darkModeEnabled = false;
   bool _soundEnabled = true;
-  String _selectedLanguage = '中文';
+  // 不再需要在本地状态存储语言，改为从 context 获取
+  // String _selectedLanguage = 'zh'; 
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
+    final currentLocale = Localizations.localeOf(context); // 获取当前 Locale
+    final currentLanguageCode = currentLocale.languageCode; // 获取当前语言代码
+
+    // 支持的语言代码
+    final List<String> languageOptions = AppLocalizations.supportedLocales.map((locale) => locale.languageCode).toList();
+    
+    // 将语言代码映射到显示名称 (确保与 supportedLocales 对应)
+    Map<String, String> languageDisplayNames = {
+      'zh': '中文',
+      'en': 'English',
+    };
+
     return SingleChildScrollView(
       padding: const EdgeInsets.all(16.0),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Text(
-            '应用设置',
+            l10n.settingsTitle, 
             style: AppTheme.headerStyle,
           ),
           const SizedBox(height: 24),
-          _buildSettingsSection('通知设置', [
+          _buildSettingsSection(l10n.settingsNotifications, [ 
             _buildSwitchTile(
-              '开启通知', 
-              '打开后会收到任务提醒',
+              l10n.settingsEnableNotifications, 
+              l10n.settingsEnableNotificationsDesc, 
               _notificationsEnabled, 
               (value) {
                 setState(() {
@@ -41,8 +59,8 @@ class _SettingsScreenState extends State<SettingsScreen> {
               },
             ),
             _buildSwitchTile(
-              '声音提醒', 
-              '任务提醒时播放声音',
+              l10n.settingsSoundAlerts, 
+              l10n.settingsSoundAlertsDesc, 
               _soundEnabled, 
               (value) {
                 setState(() {
@@ -52,75 +70,75 @@ class _SettingsScreenState extends State<SettingsScreen> {
             ),
           ]),
           const SizedBox(height: 24),
-          _buildSettingsSection('显示设置', [
+          _buildSettingsSection(l10n.settingsDisplay, [ 
             _buildSwitchTile(
-              '深色模式', 
-              '使用深色主题',
+              l10n.settingsDarkMode, 
+              l10n.settingsDarkModeDesc, 
               _darkModeEnabled, 
               (value) {
                 setState(() {
                   _darkModeEnabled = value;
+                  // TODO: 添加切换主题的逻辑
                 });
               },
             ),
             _buildDropdownTile(
-              '语言设置', 
-              '更改应用显示语言',
-              _selectedLanguage, 
-              ['中文', 'English', '日本語'], 
+              l10n.settingsLanguage, 
+              l10n.settingsLanguageDesc, 
+              currentLanguageCode, // 使用当前的语言代码
+              languageOptions, 
+              languageDisplayNames, 
               (value) {
-                setState(() {
-                  _selectedLanguage = value!;
-                });
+                if (value != null && value != currentLanguageCode) {
+                  // 调用回调函数通知 MyApp 更改语言
+                  widget.onLanguageChanged(Locale(value)); 
+                }
               },
             ),
           ]),
           const SizedBox(height: 24),
-          _buildSettingsSection('账号设置', [
+          _buildSettingsSection(l10n.settingsAccount, [ // 使用本地化字符串
             _buildActionTile(
-              '个人信息', 
-              '查看和修改您的个人信息',
+              l10n.settingsPersonalInfo, // 使用本地化字符串
+              l10n.settingsPersonalInfoDesc, // 使用本地化字符串
               Icons.person, 
               () {
-                // 处理个人信息点击
-                _showUnderDevelopmentDialog();
+                _showUnderDevelopmentDialog(context); // 传递 context
               },
             ),
             _buildActionTile(
-              '同步设置', 
-              '数据同步与备份',
+              l10n.settingsSync, // 使用本地化字符串
+              l10n.settingsSyncDesc, // 使用本地化字符串
               Icons.sync, 
               () {
-                // 处理同步设置点击
-                _showUnderDevelopmentDialog();
+                _showUnderDevelopmentDialog(context);
               },
             ),
             _buildActionTile(
-              '注销登录', 
-              '退出当前账号',
+              l10n.settingsLogout, // 使用本地化字符串
+              l10n.settingsLogoutDesc, // 使用本地化字符串
               Icons.logout, 
               () {
-                // 处理注销登录点击
-                _showUnderDevelopmentDialog();
+                _showUnderDevelopmentDialog(context);
               },
               color: Colors.red,
             ),
           ]),
           const SizedBox(height: 24),
-          const Center(
+          Center(
             child: Text(
-              '设置功能完整实现开发中...',
-              style: TextStyle(
+              l10n.settingsUnderDevelopment, // 使用本地化字符串
+              style: const TextStyle(
                 fontSize: 14,
                 fontStyle: FontStyle.italic,
               ),
             ),
           ),
           const SizedBox(height: 16),
-          const Center(
+          Center(
             child: Text(
-              '版本：1.0.0 (Beta)',
-              style: TextStyle(
+              l10n.settingsVersion('1.0.0 (Beta)'), // 使用本地化字符串
+              style: const TextStyle(
                 fontSize: 12,
                 color: Colors.grey,
               ),
@@ -173,13 +191,14 @@ class _SettingsScreenState extends State<SettingsScreen> {
       ),
     );
   }
-
-  /// 构建下拉选择设置项
+  
+  /// 构建下拉选择设置项 
   Widget _buildDropdownTile(
     String title, 
     String subtitle, 
     String value, 
     List<String> options, 
+    Map<String, String> displayNames, 
     Function(String?) onChanged,
   ) {
     return ListTile(
@@ -193,10 +212,10 @@ class _SettingsScreenState extends State<SettingsScreen> {
         value: value,
         onChanged: onChanged,
         underline: Container(),
-        items: options.map((String option) {
+        items: options.map((String optionCode) {
           return DropdownMenuItem<String>(
-            value: option,
-            child: Text(option),
+            value: optionCode,
+            child: Text(displayNames[optionCode] ?? optionCode), 
           );
         }).toList(),
       ),
@@ -233,16 +252,17 @@ class _SettingsScreenState extends State<SettingsScreen> {
   }
 
   /// 显示"功能开发中"对话框
-  void _showUnderDevelopmentDialog() {
+  void _showUnderDevelopmentDialog(BuildContext context) { 
+    final l10n = AppLocalizations.of(context)!;
     showDialog(
       context: context,
       builder: (context) => AlertDialog(
-        title: const Text('提示'),
-        content: const Text('该功能正在开发中，敬请期待！'),
+        title: Text(l10n.dialogTitleHint), 
+        content: Text(l10n.dialogContentUnderDevelopment), 
         actions: [
           TextButton(
             onPressed: () => Navigator.of(context).pop(),
-            child: const Text('确定'),
+            child: Text(l10n.dialogButtonOK), 
           ),
         ],
       ),
