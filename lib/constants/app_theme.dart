@@ -39,13 +39,14 @@ class AppTheme {
     fontStyle: FontStyle.italic,
   );
   
-  // 创建应用主题
-  static ThemeData buildTheme() {
+  // 创建浅色主题
+  static ThemeData lightTheme() {
     return ThemeData(
+      brightness: Brightness.light,
       primaryColor: primaryColor,
       fontFamily: defaultFontFamily,
-      scaffoldBackgroundColor: backgroundColor,
-      cardColor: cardColor,
+      scaffoldBackgroundColor: Colors.grey[50],
+      cardColor: Colors.white,
       appBarTheme: const AppBarTheme(
         backgroundColor: primaryColor,
         foregroundColor: Colors.white,
@@ -55,5 +56,31 @@ class AppTheme {
         unselectedItemColor: Colors.grey,
       ),
     );
+  }
+  
+  // 创建深色主题
+  static ThemeData darkTheme() {
+    return ThemeData(
+      brightness: Brightness.dark,
+      primaryColor: primaryColor,
+      fontFamily: defaultFontFamily,
+      scaffoldBackgroundColor: const Color(0xFF121212),
+      cardColor: const Color(0xFF1E1E1E),
+      appBarTheme: const AppBarTheme(
+        backgroundColor: Color(0xFF1F1F1F),
+        foregroundColor: Colors.white,
+      ),
+      bottomNavigationBarTheme: const BottomNavigationBarThemeData(
+        selectedItemColor: Colors.lightBlueAccent,
+        unselectedItemColor: Colors.grey,
+        backgroundColor: Color(0xFF1F1F1F),
+      ),
+    );
+  }
+  
+  // 兼容旧版本，使用浅色主题
+  @deprecated
+  static ThemeData buildTheme() {
+    return lightTheme();
   }
 } 

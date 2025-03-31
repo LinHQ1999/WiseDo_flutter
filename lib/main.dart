@@ -30,7 +30,9 @@ class _MyAppState extends State<MyApp> {
   Widget build(BuildContext context) {
     return MaterialApp(
       title: 'Schedule Assistant',
-      theme: AppTheme.buildTheme(),
+      theme: AppTheme.lightTheme(),
+      darkTheme: AppTheme.darkTheme(),
+      themeMode: ThemeMode.system, // 跟随系统设置
       locale: _locale,
       localizationsDelegates: const [
         AppLocalizations.delegate,

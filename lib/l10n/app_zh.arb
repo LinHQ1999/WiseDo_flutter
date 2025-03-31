@@ -66,5 +66,20 @@
   "settingsVersion": "版本：{version}",
   "dialogTitleHint": "提示",
   "dialogContentUnderDevelopment": "该功能正在开发中，敬请期待！",
-  "dialogButtonOK": "确定"
+  "dialogButtonOK": "确定",
+  
+  "quadrantTaskManager": "四象限任务管理",
+  "allTasks": "全部",
+  "todayTasks": "今日",
+  "weeklyTasks": "本周",
+  "addTask": "添加",
+  "noTasks": "暂无任务",
+  "addNewTask": "添加新任务",
+  "editTask": "编辑任务",
+  "taskTitle": "任务标题",
+  "taskDeadline": "截止日期",
+  "save": "保存",
+  "cancel": "取消",
+  "delete": "删除",
+  "chooseQuadrant": "选择象限"
 } 

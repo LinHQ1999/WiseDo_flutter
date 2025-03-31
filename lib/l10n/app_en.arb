@@ -31,7 +31,7 @@
   "quadrantImportantNotUrgentAction": "Plan",
   "quadrantUrgentNotImportant": "Urgent & Not Important",
   "quadrantUrgentNotImportantAction": "Delegate",
-  "quadrantNotUrgentNotImportant": "Not Urgent & Not Important",
+  "quadrantNotUrgentNotImportant": "Not Important & Not Urgent",
   "quadrantNotUrgentNotImportantAction": "Eliminate",
   "quadrantUnderDevelopment": "Quadrant feature is under development...",
   "statsTitle": "Task Statistics",
@@ -65,5 +65,20 @@
   "settingsVersion": "Version: {version}",
   "dialogTitleHint": "Hint",
   "dialogContentUnderDevelopment": "This feature is under development, please stay tuned!",
-  "dialogButtonOK": "OK"
+  "dialogButtonOK": "OK",
+  
+  "quadrantTaskManager": "Quadrant Task Manager",
+  "allTasks": "All",
+  "todayTasks": "Today",
+  "weeklyTasks": "This Week",
+  "addTask": "Add",
+  "noTasks": "No tasks yet",
+  "addNewTask": "Add New Task",
+  "editTask": "Edit Task",
+  "taskTitle": "Task Title",
+  "taskDeadline": "Deadline",
+  "save": "Save",
+  "cancel": "Cancel",
+  "delete": "Delete",
+  "chooseQuadrant": "Choose Quadrant"
 } 
