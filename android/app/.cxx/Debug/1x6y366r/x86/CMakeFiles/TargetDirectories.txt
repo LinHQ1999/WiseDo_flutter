@@ -1,0 +1,2 @@
+D:/start-up/WiseDo/WiseDo_flutter/android/app/.cxx/Debug/1x6y366r/x86/CMakeFiles/edit_cache.dir
+D:/start-up/WiseDo/WiseDo_flutter/android/app/.cxx/Debug/1x6y366r/x86/CMakeFiles/rebuild_cache.dir
