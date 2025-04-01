@@ -25,9 +25,41 @@ class _MyAppState extends State<MyApp> {
   int _currentIndex = 0;
   /// 当前应用的 Locale
   Locale? _locale;
+  bool _isLoading = true;
+
+  @override
+  void initState() {
+    super.initState();
+    _loadPreferences();
+  }
+
+  /// 加载保存的首选项
+  Future<void> _loadPreferences() async {
+    try {
+      final language = await DatabaseHelper.instance.getPreference('language');
+      if (language != null) {
+        setState(() {
+          _locale = Locale(language);
+        });
+      }
+    } catch (e) {
+      debugPrint('加载语言首选项失败: $e');
+    } finally {
+      setState(() {
+        _isLoading = false;
+      });
+    }
+  }
   
   @override
   Widget build(BuildContext context) {
+    if (_isLoading) {
+      return const MaterialApp(
+        home: Scaffold(
+          body: Center(child: CircularProgressIndicator()),
+        ),
+      );
+    }
     return MaterialApp(
       title: 'Schedule Assistant',
       theme: AppTheme.lightTheme(),

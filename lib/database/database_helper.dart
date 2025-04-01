@@ -37,6 +37,14 @@ class DatabaseHelper {
         isCompleted INTEGER
       )
     ''');
+    
+    await db.execute('''
+      CREATE TABLE preferences (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        key TEXT NOT NULL UNIQUE,
+        value TEXT
+      )
+    ''');
   }
 
   Future<int> createTask(Task task) async {
@@ -67,6 +75,26 @@ class DatabaseHelper {
       where: 'id = ?',
       whereArgs: [id],
     );
+  }
+
+  Future<int> setPreference(String key, String value) async {
+    final db = await instance.database;
+    return await db.insert(
+      'preferences',
+      {'key': key, 'value': value},
+      conflictAlgorithm: ConflictAlgorithm.replace,
+    );
+  }
+
+  Future<String?> getPreference(String key) async {
+    final db = await instance.database;
+    final result = await db.query(
+      'preferences',
+      where: 'key = ?',
+      whereArgs: [key],
+      limit: 1,
+    );
+    return result.isNotEmpty ? result.first['value'] as String? : null;
   }
 
   Future close() async {
