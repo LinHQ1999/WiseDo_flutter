@@ -16,9 +16,6 @@ class QuadrantSection extends StatelessWidget {
   
   /// 任务完成状态变更回调
   final Function(QuadrantTask, bool) onTaskCompletionChanged;
-  
-  /// 添加任务回调
-  final VoidCallback onAddTask;
 
   /// 构造函数
   const QuadrantSection({
@@ -27,7 +24,6 @@ class QuadrantSection extends StatelessWidget {
     required this.title,
     required this.tasks,
     required this.onTaskCompletionChanged,
-    required this.onAddTask,
   }) : super(key: key);
 
   @override
@@ -126,45 +122,6 @@ class QuadrantSection extends StatelessWidget {
                         );
                       },
                     ),
-            ),
-          ),
-          
-          // 添加按钮
-          Container(
-            decoration: BoxDecoration(
-              color: backgroundColor,
-              border: Border(
-                top: BorderSide(color: borderColor!, width: 0.5),
-              ),
-            ),
-            child: Material(
-              color: Colors.transparent,
-              child: InkWell(
-                onTap: onAddTask,
-                child: Padding(
-                  padding: const EdgeInsets.symmetric(vertical: 8.0),
-                  child: Center(
-                    child: Row(
-                      mainAxisSize: MainAxisSize.min,
-                      children: [
-                        Icon(
-                          Icons.add,
-                          size: 16,
-                          color: theme.textTheme.bodyMedium?.color,
-                        ),
-                        const SizedBox(width: 4),
-                        Text(
-                          l10n.addTask,
-                          style: TextStyle(
-                            fontSize: 12,
-                            color: theme.textTheme.bodyMedium?.color,
-                          ),
-                        ),
-                      ],
-                    ),
-                  ),
-                ),
-              ),
             ),
           ),
         ],
