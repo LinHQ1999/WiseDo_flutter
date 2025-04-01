@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import '../database/database_helper.dart';
 import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 import '../models/task.dart';
 import '../widgets/header_widget.dart';
@@ -16,32 +17,39 @@ class HomeScreen extends StatefulWidget {
 
 class _HomeScreenState extends State<HomeScreen> {
   /// 任务列表
-  late List<Task> _tasks;
+  List<Task> _tasks = [];
   bool _initialized = false;
+  final DatabaseHelper _dbHelper = DatabaseHelper.instance;
 
   @override
   void initState() {
     super.initState();
+    _loadTasks();
   }
   
   @override
   void dispose() {
+    _dbHelper.close();
     super.dispose();
   }
 
-  @override
-  void didChangeDependencies() {
-    super.didChangeDependencies();
-    if (!_initialized) {
-      _initializeTasks();
-      _initialized = true;
+  /// 从数据库加载任务
+  Future<void> _loadTasks() async {
+    final tasks = await _dbHelper.readAllTasks();
+    if (tasks.isEmpty) {
+      await _initializeDefaultTasks();
+    } else {
+      setState(() {
+        _tasks = tasks;
+        _initialized = true;
+      });
     }
   }
 
-  /// 初始化任务列表（使用本地化字符串）
-  void _initializeTasks() {
+  /// 初始化默认任务（使用本地化字符串）
+  Future<void> _initializeDefaultTasks() async {
     final l10n = AppLocalizations.of(context)!;
-    _tasks = [
+    final defaultTasks = [
       Task(
         title: l10n.taskTitlePrepareDemo,
         time: '14:00 - 公司会议室',
@@ -60,6 +68,27 @@ class _HomeScreenState extends State<HomeScreen> {
         priority: '中优先级',
       ),
     ];
+
+    for (final task in defaultTasks) {
+      await _dbHelper.createTask(task);
+    }
+
+    setState(() {
+      _tasks = defaultTasks;
+      _initialized = true;
+    });
+  }
+
+  /// 更新任务完成状态
+  Future<void> _updateTaskCompletion(Task task, bool isCompleted) async {
+    final updatedTask = task.copyWith(isCompleted: isCompleted);
+    await _dbHelper.updateTask(updatedTask);
+    setState(() {
+      final index = _tasks.indexWhere((t) => t.id == task.id);
+      if (index != -1) {
+        _tasks[index] = updatedTask;
+      }
+    });
   }
   
   @override
@@ -327,9 +356,7 @@ class _HomeScreenState extends State<HomeScreen> {
             ),
             child: InkWell(
               onTap: () {
-                setState(() {
-                  _tasks[index] = _tasks[index].copyWith(isCompleted: !task.isCompleted);
-                });
+                _updateTaskCompletion(task, !task.isCompleted);
               },
               child: task.isCompleted
                   ? const Icon(
