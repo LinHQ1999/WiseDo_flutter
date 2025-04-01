@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/foundation.dart';
 import '../database/database_helper.dart';
 import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 import '../models/task.dart';
@@ -24,25 +25,44 @@ class _HomeScreenState extends State<HomeScreen> {
   @override
   void initState() {
     super.initState();
-    _loadTasks();
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      _loadTasks();
+    });
+  }
+
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    // 当从其他页面返回时重新加载任务
+    if (_initialized) {
+      _loadTasks();
+    }
   }
   
   @override
   void dispose() {
-    _dbHelper.close();
+    // 不再主动关闭数据库，由DatabaseHelper管理
     super.dispose();
   }
 
   /// 从数据库加载任务
   Future<void> _loadTasks() async {
-    final tasks = await _dbHelper.readAllTasks();
-    if (tasks.isEmpty) {
-      await _initializeDefaultTasks();
-    } else {
+    try {
+      final tasks = await _dbHelper.readAllTasks();
+      if (tasks.isEmpty) {
+        await _initializeDefaultTasks();
+      } else {
+        setState(() {
+          _tasks = tasks;
+          _initialized = true;
+        });
+      }
+    } catch (e) {
+      debugPrint('加载任务失败: $e');
       setState(() {
-        _tasks = tasks;
-        _initialized = true;
+        _initialized = true; // 即使失败也标记为已初始化
       });
+      // 可以在这里添加重试逻辑或显示错误提示
     }
   }
 
