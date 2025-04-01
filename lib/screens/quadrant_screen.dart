@@ -1,6 +1,9 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 import '../constants/app_theme.dart';
+import '../database/database_helper.dart';
+import '../models/task.dart';
 import '../models/quadrant_task.dart';
 import '../widgets/quadrant_section.dart';
 import '../widgets/task_edit_dialog.dart';
@@ -29,57 +32,61 @@ class _QuadrantScreenState extends State<QuadrantScreen> {
   TaskFilter _selectedFilter = TaskFilter.today;
   
   /// 所有任务列表
-  final List<QuadrantTask> _tasks = [
-    // 重要且紧急任务
-    QuadrantTask(
-      id: '1',
-      title: '准备下午的项目演示',
-      deadline: '今天 14:00',
-      quadrantType: QuadrantType.importantUrgent,
-    ),
-    QuadrantTask(
-      id: '2',
-      title: '回复张总邮件',
-      deadline: '今天',
-      quadrantType: QuadrantType.importantUrgent,
-    ),
-    QuadrantTask(
-      id: '3',
-      title: '完成季度报告初稿',
-      deadline: '今天',
-      quadrantType: QuadrantType.importantUrgent,
-    ),
+  List<QuadrantTask> _tasks = [];
+  bool _isLoading = true;
+  final DatabaseHelper _dbHelper = DatabaseHelper.instance;
+
+  @override
+  void initState() {
+    super.initState();
+    _loadTasks();
+  }
+
+  /// 从数据库加载任务
+  Future<void> _loadTasks() async {
+    try {
+      final tasks = await _dbHelper.readAllTasks();
+      final quadrantTasks = tasks.map((task) => QuadrantTask(
+        id: task.id.toString(),
+        title: task.title,
+        deadline: task.deadline,
+        quadrantType: _convertPriorityToQuadrant(task.priority, task.isPriority),
+        isCompleted: task.isCompleted,
+      )).toList();
+
+      setState(() {
+        _tasks = quadrantTasks;
+        _isLoading = false;
+      });
+    } catch (e) {
+      debugPrint('加载任务失败: $e');
+      setState(() {
+        _isLoading = false;
+      });
+    }
+  }
+
+  /// 将优先级转换为象限类型
+  QuadrantType _convertPriorityToQuadrant(String? priority, bool isPriority) {
+    if (priority == null) return QuadrantType.notImportantNotUrgent;
+    if (priority.contains('高')) return QuadrantType.importantUrgent;
+    if (isPriority) return QuadrantType.importantNotUrgent;
+    if (priority.contains('中')) return QuadrantType.urgentNotImportant;
+    return QuadrantType.notImportantNotUrgent;
+  }
+
+  /// 更新任务完成状态
+  Future<void> _updateTaskCompletion(QuadrantTask task, bool isCompleted) async {
+    final dbTask = Task(
+      id: int.tryParse(task.id),
+      title: task.title,
+      deadline: task.deadline,
+      isCompleted: isCompleted,
+    );
     
-    // 重要不紧急任务
-    QuadrantTask(
-      id: '4',
-      title: '制定下月营销计划',
-      deadline: '本周五',
-      quadrantType: QuadrantType.importantNotUrgent,
-    ),
-    QuadrantTask(
-      id: '5',
-      title: '安排团队建设活动',
-      deadline: '本周',
-      quadrantType: QuadrantType.importantNotUrgent,
-    ),
-    
-    // 紧急不重要任务
-    QuadrantTask(
-      id: '6',
-      title: '回复部门周报邮件',
-      deadline: '今天',
-      quadrantType: QuadrantType.urgentNotImportant,
-    ),
-    
-    // 不重要不紧急任务
-    QuadrantTask(
-      id: '7',
-      title: '订购办公用品',
-      deadline: '今天内',
-      quadrantType: QuadrantType.notImportantNotUrgent,
-    ),
-  ];
+    await _dbHelper.updateTask(dbTask);
+    await _loadTasks();
+  }
 
   /// 获取当前过滤后的任务列表
   List<QuadrantTask> get _filteredTasks {
@@ -103,6 +110,10 @@ class _QuadrantScreenState extends State<QuadrantScreen> {
     final l10n = AppLocalizations.of(context)!;
     final theme = Theme.of(context);
     final isDark = theme.brightness == Brightness.dark;
+
+    if (_isLoading) {
+      return const Center(child: CircularProgressIndicator());
+    }
     
     return Scaffold(
       backgroundColor: theme.scaffoldBackgroundColor,
@@ -234,12 +245,7 @@ class _QuadrantScreenState extends State<QuadrantScreen> {
 
   /// 处理任务完成状态变更
   void _handleTaskCompletionChanged(QuadrantTask task, bool isCompleted) {
-    setState(() {
-      final index = _tasks.indexWhere((t) => t.id == task.id);
-      if (index != -1) {
-        _tasks[index] = _tasks[index].copyWith(isCompleted: isCompleted);
-      }
-    });
+    _updateTaskCompletion(task, isCompleted);
   }
 
   /// 显示添加任务对话框

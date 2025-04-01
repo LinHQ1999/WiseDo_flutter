@@ -14,7 +14,7 @@ enum QuadrantType {
 
 /// 四象限任务模型类
 class QuadrantTask {
-  /// 任务ID
+  /// 任务ID (与数据库中的id对应)
   final String id;
   
   /// 任务标题
@@ -27,10 +27,10 @@ class QuadrantTask {
   final QuadrantType quadrantType;
   
   /// 是否已完成
-  bool isCompleted;
+  final bool isCompleted;
   
   /// 构造函数
-  QuadrantTask({
+  const QuadrantTask({
     required this.id,
     required this.title,
     this.deadline,
