@@ -87,10 +87,19 @@ class _SettingsScreenState extends State<SettingsScreen> {
               languageOptions, 
               languageDisplayNames,
               theme,
-              (value) {
+              (value) async {
                 if (value != null && value != currentLanguageCode) {
-                  // 调用回调函数通知 MyApp 更改语言
-                  widget.onLanguageChanged(Locale(value)); 
+                  try {
+                    // 保存语言首选项到数据库
+                    await DatabaseHelper.instance.setPreference('language', value);
+                    // 调用回调函数通知 MyApp 更改语言
+                    widget.onLanguageChanged(Locale(value));
+                  } catch (e) {
+                    debugPrint('保存语言首选项失败: $e');
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      SnackBar(content: Text('保存设置失败，请重试')),
+                    );
+                  }
                 }
               },
             ),
