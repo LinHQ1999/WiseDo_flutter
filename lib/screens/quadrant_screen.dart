@@ -203,7 +203,6 @@ class _QuadrantScreenState extends State<QuadrantScreen> {
           title: l10n.quadrantUrgentImportant,
           tasks: _filteredTasks,
           onTaskCompletionChanged: _handleTaskCompletionChanged,
-          onAddTask: () => _showAddTaskDialog(QuadrantType.importantUrgent),
         ),
         
         // 重要不紧急
@@ -212,7 +211,6 @@ class _QuadrantScreenState extends State<QuadrantScreen> {
           title: l10n.quadrantImportantNotUrgent,
           tasks: _filteredTasks,
           onTaskCompletionChanged: _handleTaskCompletionChanged,
-          onAddTask: () => _showAddTaskDialog(QuadrantType.importantNotUrgent),
         ),
         
         // 紧急不重要
@@ -221,7 +219,6 @@ class _QuadrantScreenState extends State<QuadrantScreen> {
           title: l10n.quadrantUrgentNotImportant,
           tasks: _filteredTasks,
           onTaskCompletionChanged: _handleTaskCompletionChanged,
-          onAddTask: () => _showAddTaskDialog(QuadrantType.urgentNotImportant),
         ),
         
         // 不重要不紧急
@@ -230,7 +227,6 @@ class _QuadrantScreenState extends State<QuadrantScreen> {
           title: l10n.quadrantNotUrgentNotImportant,
           tasks: _filteredTasks,
           onTaskCompletionChanged: _handleTaskCompletionChanged,
-          onAddTask: () => _showAddTaskDialog(QuadrantType.notImportantNotUrgent),
         ),
       ],
     );

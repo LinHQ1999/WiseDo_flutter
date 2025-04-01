@@ -161,12 +161,13 @@ class _HomeScreenState extends State<HomeScreen> {
     final priorityTasks = _tasks.where((task) => task.isPriority).toList();
     
     return Container(
+      width: double.infinity, // 确保容器宽度填满
       decoration: BoxDecoration(
         color: isDark ? const Color(0xFF2C3E50) : const Color(0xFF4A7BF7),
         borderRadius: BorderRadius.circular(16),
       ),
       child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
+        crossAxisAlignment: CrossAxisAlignment.stretch, // 使子元素横向拉伸
         children: [
           // 标题部分
           Padding(
@@ -206,12 +207,15 @@ class _HomeScreenState extends State<HomeScreen> {
     return Container(
       margin: const EdgeInsets.fromLTRB(16, 8, 16, 8),
       padding: const EdgeInsets.all(16),
+      width: double.infinity, // 确保宽度填满父容器
       decoration: BoxDecoration(
         color: isDark ? const Color(0xFF3E5064) : const Color(0xFF5F88F8),
         borderRadius: BorderRadius.circular(12),
       ),
+      constraints: const BoxConstraints(minHeight: 90),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
+        mainAxisAlignment: MainAxisAlignment.center,
         children: [
           Text(
             task.title,
