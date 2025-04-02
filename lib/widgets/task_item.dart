@@ -41,7 +41,7 @@ class TaskItem extends StatelessWidget {
                   task.title,
                   style: TextStyle(
                     fontSize: 16,
-                    color: task.isPriority ? AppTheme.textHighlightColor : AppTheme.textPrimaryColor,
+                    color: task.isPriority ? AppColors.accentColor : AppColors.textPrimaryLight,
                     decoration: task.isCompleted ? TextDecoration.lineThrough : null,
                   ),
                 ),
@@ -53,7 +53,10 @@ class TaskItem extends StatelessWidget {
                       const SizedBox(width: 4),
                       Text(
                         task.time!,
-                        style: AppTheme.subtitleStyle,
+                        style: TextStyle(
+                          fontSize: 12,
+                          color: Colors.grey[600],
+                        ),
                       ),
                     ],
                   ),

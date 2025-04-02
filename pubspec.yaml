@@ -37,6 +37,22 @@ dependencies:
   # Use with the CupertinoIcons class for iOS style icons.
   cupertino_icons: ^1.0.6
   sqflite: ^2.4.1
+  # 服务定位器
+  get_it: ^7.6.7
+  # 路径处理
+  path: ^1.9.0
+  # 共享首选项
+  shared_preferences: ^2.2.2
+  # 状态管理
+  provider: ^6.1.2
+  # 国际化
+  intl: ^0.19.0
+  # 日期时间选择器
+  flutter_datetime_picker_plus: ^2.1.0
+  # 图表
+  fl_chart: ^0.66.2
+  # 动画
+  flutter_animate: ^4.5.0
 
 dev_dependencies:
   flutter_test:

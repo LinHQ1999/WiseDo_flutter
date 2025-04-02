@@ -1,15 +1,23 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:flutter_gen/gen_l10n/app_localizations.dart';
-import 'package:wise_do_app/database/database_helper.dart';
-import 'constants/app_theme.dart';
+import 'services/service_locator.dart';
 import 'screens/home_screen.dart';
 import 'screens/quadrant_screen.dart';
 import 'screens/stats_screen.dart';
 import 'screens/settings_screen.dart';
 
 /// 应用入口
-void main() => runApp(const MyApp());
+void main() async {
+  // 确保Flutter绑定初始化
+  WidgetsFlutterBinding.ensureInitialized();
+  
+  // 初始化服务定位器
+  await ServiceLocator.init();
+  
+  // 运行应用
+  runApp(const MyApp());
+}
 
 /// 应用主类
 class MyApp extends StatefulWidget {
@@ -24,27 +32,39 @@ class MyApp extends StatefulWidget {
 class _MyAppState extends State<MyApp> {
   /// 当前选中的页面索引
   int _currentIndex = 0;
-  /// 当前应用的 Locale
-  Locale? _locale;
+  
+  /// 是否正在加载中
   bool _isLoading = true;
+  
+  /// 当前语言设置
+  Locale? _locale;
 
   @override
   void initState() {
     super.initState();
-    _loadPreferences();
+    _initializeApp();
   }
 
-  /// 加载保存的首选项
-  Future<void> _loadPreferences() async {
+  /// 初始化应用
+  Future<void> _initializeApp() async {
     try {
-      final language = await DatabaseHelper.instance.getPreference('language');
-      if (language != null) {
-        setState(() {
-          _locale = Locale(language);
-        });
+      // 获取保存的语言设置
+      final language = ServiceLocator.preferenceService.language;
+      if (language.isNotEmpty) {
+        _locale = Locale(language);
       }
+      
+      // 订阅主题更改
+      ServiceLocator.themeService.themeModeStream.listen((mode) {
+        setState(() {});
+      });
+      
+      ServiceLocator.themeService.themeDataStream.listen((theme) {
+        setState(() {});
+      });
+      
     } catch (e) {
-      debugPrint('加载语言首选项失败: $e');
+      debugPrint('初始化应用失败: $e');
     } finally {
       setState(() {
         _isLoading = false;
@@ -61,11 +81,15 @@ class _MyAppState extends State<MyApp> {
         ),
       );
     }
+    
+    // 获取当前主题设置
+    final themeService = ServiceLocator.themeService;
+    
     return MaterialApp(
-      title: 'Schedule Assistant',
-      theme: AppTheme.lightTheme(),
-      darkTheme: AppTheme.darkTheme(),
-      themeMode: ThemeMode.system, // 跟随系统设置
+      title: 'WiseDo',
+      theme: themeService.lightTheme,
+      darkTheme: themeService.darkTheme,
+      themeMode: themeService.themeMode,
       locale: _locale,
       localizationsDelegates: const [
         AppLocalizations.delegate,
@@ -133,6 +157,14 @@ class _MyAppState extends State<MyApp> {
   void _changeLanguage(Locale locale) {
     setState(() {
       _locale = locale;
+      // 保存语言设置
+      ServiceLocator.preferenceService.setLanguage(locale.languageCode);
     });
+  }
+  
+  @override
+  void dispose() {
+    // 释放所有资源
+    super.dispose();
   }
 }

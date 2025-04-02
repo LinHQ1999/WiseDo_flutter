@@ -18,7 +18,22 @@ enum TaskFilter {
   thisWeek,
 }
 
-/// 四象限屏幕
+/// 过滤器关键词常量
+class FilterKeywords {
+  static const todayZh = '今天';
+  static const todayEn = 'Today';
+  static const weekZh = '本周';
+  static const weekEn = 'Week';
+}
+
+/// 优先级常量
+class PriorityLevel {
+  static const high = '高优先级';
+  static const medium = '中优先级';
+  static const low = '低优先级';
+}
+
+/// 四象限任务管理屏幕
 class QuadrantScreen extends StatefulWidget {
   /// 构造函数
   const QuadrantScreen({Key? key}) : super(key: key);
@@ -31,10 +46,22 @@ class _QuadrantScreenState extends State<QuadrantScreen> {
   /// 当前选中的任务过滤器
   TaskFilter _selectedFilter = TaskFilter.today;
   
-  /// 所有任务列表
-  List<QuadrantTask> _tasks = [];
+  /// 所有任务列表 (从数据库加载)
+  List<QuadrantTask> _allTasks = [];
+  
+  /// 是否正在加载数据
   bool _isLoading = true;
+  
+  /// 数据库辅助工具
   final DatabaseHelper _dbHelper = DatabaseHelper.instance;
+  
+  /// 象限类型定义
+  static final List<QuadrantType> _quadrantTypes = [
+    QuadrantType.importantUrgent,
+    QuadrantType.importantNotUrgent,
+    QuadrantType.urgentNotImportant,
+    QuadrantType.notImportantNotUrgent,
+  ];
 
   @override
   void initState() {
@@ -42,67 +69,130 @@ class _QuadrantScreenState extends State<QuadrantScreen> {
     _loadTasks();
   }
 
-  /// 从数据库加载任务
+  /// 从数据库加载任务列表
   Future<void> _loadTasks() async {
+    if (!mounted) return;
+    
+    setState(() {
+      _isLoading = true;
+    });
+    
     try {
-      final tasks = await _dbHelper.readAllTasks();
-      final quadrantTasks = tasks.map((task) => QuadrantTask(
-        id: task.id.toString(),
-        title: task.title,
-        deadline: task.deadline,
-        quadrantType: _convertPriorityToQuadrant(task.priority, task.isPriority),
-        isCompleted: task.isCompleted,
-      )).toList();
-
+      final tasksFromDb = await _dbHelper.readAllTasks();
+      
+      if (!mounted) return;
+      
+      final quadrantTasks = tasksFromDb.map((task) => _convertToQuadrantTask(task)).toList();
+      
       setState(() {
-        _tasks = quadrantTasks;
+        _allTasks = quadrantTasks;
         _isLoading = false;
       });
     } catch (e) {
       debugPrint('加载任务失败: $e');
+      
+      if (!mounted) return;
+      
       setState(() {
         _isLoading = false;
+        // 这里可以设置错误状态或显示错误信息
       });
     }
+  }
+  
+  /// 将数据库任务转换为四象限任务
+  QuadrantTask _convertToQuadrantTask(Task task) {
+    return QuadrantTask(
+      id: task.id.toString(),
+      title: task.title,
+      deadline: task.deadline,
+      quadrantType: _convertPriorityToQuadrant(task.priority, task.isPriority),
+      isCompleted: task.isCompleted,
+    );
   }
 
   /// 将优先级转换为象限类型
   QuadrantType _convertPriorityToQuadrant(String? priority, bool isPriority) {
     if (priority == null) return QuadrantType.notImportantNotUrgent;
+    
     if (priority.contains('高')) return QuadrantType.importantUrgent;
+    
     if (isPriority) return QuadrantType.importantNotUrgent;
+    
     if (priority.contains('中')) return QuadrantType.urgentNotImportant;
+    
     return QuadrantType.notImportantNotUrgent;
+  }
+  
+  /// 将象限类型转换为优先级信息
+  Map<String, dynamic> _convertQuadrantToPriority(QuadrantType quadrantType) {
+    switch (quadrantType) {
+      case QuadrantType.importantUrgent:
+        return {'priority': PriorityLevel.high, 'isPriority': true};
+        
+      case QuadrantType.importantNotUrgent:
+        return {'priority': PriorityLevel.medium, 'isPriority': true};
+        
+      case QuadrantType.urgentNotImportant:
+        return {'priority': PriorityLevel.medium, 'isPriority': false};
+        
+      case QuadrantType.notImportantNotUrgent:
+        return {'priority': PriorityLevel.low, 'isPriority': false};
+    }
   }
 
   /// 更新任务完成状态
   Future<void> _updateTaskCompletion(QuadrantTask task, bool isCompleted) async {
-    final dbTask = Task(
-      id: int.tryParse(task.id),
-      title: task.title,
-      deadline: task.deadline,
-      isCompleted: isCompleted,
-    );
-    
-    await _dbHelper.updateTask(dbTask);
-    await _loadTasks();
+    try {
+      final taskId = int.tryParse(task.id);
+      
+      if (taskId == null) {
+        debugPrint('无效的任务ID: ${task.id}');
+        return;
+      }
+      
+      final dbTask = Task(
+        id: taskId,
+        title: task.title,
+        deadline: task.deadline,
+        isCompleted: isCompleted,
+      );
+      
+      await _dbHelper.updateTask(dbTask);
+      await _loadTasks();
+    } catch (e) {
+      debugPrint('更新任务状态失败: $e');
+      // 可以添加错误处理，如显示Snackbar等
+    }
   }
 
   /// 获取当前过滤后的任务列表
   List<QuadrantTask> get _filteredTasks {
     switch (_selectedFilter) {
       case TaskFilter.today:
-        return _tasks.where((task) => 
-          task.deadline?.contains('今天') == true || 
-          task.deadline?.contains('Today') == true).toList();
+        return _filterTasksByKeywords([
+          FilterKeywords.todayZh, 
+          FilterKeywords.todayEn
+        ]);
+        
       case TaskFilter.thisWeek:
-        return _tasks.where((task) => 
-          task.deadline?.contains('本周') == true || 
-          task.deadline?.contains('Week') == true).toList();
+        return _filterTasksByKeywords([
+          FilterKeywords.weekZh, 
+          FilterKeywords.weekEn
+        ]);
+        
       case TaskFilter.all:
       default:
-        return _tasks;
+        return _allTasks;
     }
+  }
+  
+  /// 根据关键词过滤任务
+  List<QuadrantTask> _filterTasksByKeywords(List<String> keywords) {
+    return _allTasks.where((task) => 
+      task.deadline != null && 
+      keywords.any((keyword) => task.deadline!.contains(keyword))
+    ).toList();
   }
 
   @override
@@ -111,43 +201,48 @@ class _QuadrantScreenState extends State<QuadrantScreen> {
     final theme = Theme.of(context);
     final isDark = theme.brightness == Brightness.dark;
 
-    if (_isLoading) {
-      return const Center(child: CircularProgressIndicator());
-    }
-    
     return Scaffold(
       backgroundColor: theme.scaffoldBackgroundColor,
-      body: Padding(
-        padding: const EdgeInsets.fromLTRB(16.0, 8.0, 16.0, 16.0),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            // 标题
-            Text(
-              l10n.quadrantTaskManager,
-              style: TextStyle(
-                fontSize: 24,
-                fontWeight: FontWeight.bold,
-                color: theme.textTheme.titleLarge?.color,
+      body: SafeArea(
+        child: Padding(
+          padding: const EdgeInsets.fromLTRB(16.0, 8.0, 16.0, 16.0),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              // 标题
+              _buildScreenTitle(l10n, theme),
+              const SizedBox(height: 16.0),
+              
+              // 过滤器选项卡
+              _buildFilterTabs(l10n, theme, isDark),
+              const SizedBox(height: 16.0),
+              
+              // 四象限网格或加载指示器
+              Expanded(
+                child: _isLoading
+                    ? const Center(child: CircularProgressIndicator())
+                    : _buildQuadrantGrid(l10n),
               ),
-            ),
-            const SizedBox(height: 16.0),
-            
-            // 过滤器选项卡
-            _buildFilterTabs(l10n, theme, isDark),
-            const SizedBox(height: 16.0),
-            
-            // 四象限网格
-            Expanded(
-              child: _buildQuadrantGrid(l10n),
-            ),
-          ],
+            ],
+          ),
         ),
       ),
     );
   }
 
-  /// 构建过滤器选项卡
+  /// 构建屏幕标题
+  Widget _buildScreenTitle(AppLocalizations l10n, ThemeData theme) {
+    return Text(
+      l10n.quadrantTaskManager,
+      style: TextStyle(
+        fontSize: 24,
+        fontWeight: FontWeight.bold,
+        color: theme.textTheme.titleLarge?.color,
+      ),
+    );
+  }
+
+  /// 构建过滤器选项卡组
   Widget _buildFilterTabs(AppLocalizations l10n, ThemeData theme, bool isDark) {
     return Container(
       decoration: BoxDecoration(
@@ -155,13 +250,29 @@ class _QuadrantScreenState extends State<QuadrantScreen> {
         borderRadius: BorderRadius.circular(30.0),
       ),
       child: Row(
-        children: [
-          _buildFilterTab(l10n.todayTasks, TaskFilter.today, theme, isDark),
-          _buildFilterTab(l10n.weeklyTasks, TaskFilter.thisWeek, theme, isDark),
-          _buildFilterTab(l10n.allTasks, TaskFilter.all, theme, isDark),
-        ],
+        children: TaskFilter.values.map((filter) =>
+          _buildFilterTab(
+            _getFilterLabel(l10n, filter),
+            filter,
+            theme,
+            isDark,
+          )
+        ).toList(),
       ),
     );
+  }
+
+  /// 获取过滤器的本地化标签
+  String _getFilterLabel(AppLocalizations l10n, TaskFilter filter) {
+    switch (filter) {
+      case TaskFilter.today:
+        return l10n.todayTasks;
+      case TaskFilter.thisWeek:
+        return l10n.weeklyTasks;
+      case TaskFilter.all:
+      default:
+        return l10n.allTasks;
+    }
   }
 
   /// 构建单个过滤器选项卡
@@ -171,9 +282,11 @@ class _QuadrantScreenState extends State<QuadrantScreen> {
     return Expanded(
       child: GestureDetector(
         onTap: () {
-          setState(() {
-            _selectedFilter = filter;
-          });
+          if (_selectedFilter != filter) {
+            setState(() {
+              _selectedFilter = filter;
+            });
+          }
         },
         child: Container(
           padding: const EdgeInsets.symmetric(vertical: 14.0),
@@ -200,74 +313,81 @@ class _QuadrantScreenState extends State<QuadrantScreen> {
     );
   }
 
-  /// 构建四象限网格
+  /// 构建四象限网格 - 使用GridView.builder动态生成
   Widget _buildQuadrantGrid(AppLocalizations l10n) {
-    return GridView.count(
-      crossAxisCount: 2,
-      crossAxisSpacing: 8.0,
-      mainAxisSpacing: 8.0,
-      childAspectRatio: 0.9, // 调整卡片比例
-      children: [
-        // 重要且紧急
-        QuadrantSection(
-          quadrantType: QuadrantType.importantUrgent,
-          title: l10n.quadrantUrgentImportant,
+    return GridView.builder(
+      gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+        crossAxisCount: 2,
+        crossAxisSpacing: 8.0,
+        mainAxisSpacing: 8.0,
+        childAspectRatio: 0.9, // 调整卡片比例
+      ),
+      itemCount: _quadrantTypes.length,
+      itemBuilder: (context, index) {
+        final quadrantType = _quadrantTypes[index];
+        return QuadrantSection(
+          quadrantType: quadrantType,
+          title: _getQuadrantTitle(l10n, quadrantType),
           tasks: _filteredTasks,
           onTaskCompletionChanged: _handleTaskCompletionChanged,
-        ),
-        
-        // 重要不紧急
-        QuadrantSection(
-          quadrantType: QuadrantType.importantNotUrgent,
-          title: l10n.quadrantImportantNotUrgent,
-          tasks: _filteredTasks,
-          onTaskCompletionChanged: _handleTaskCompletionChanged,
-        ),
-        
-        // 紧急不重要
-        QuadrantSection(
-          quadrantType: QuadrantType.urgentNotImportant,
-          title: l10n.quadrantUrgentNotImportant,
-          tasks: _filteredTasks,
-          onTaskCompletionChanged: _handleTaskCompletionChanged,
-        ),
-        
-        // 不重要不紧急
-        QuadrantSection(
-          quadrantType: QuadrantType.notImportantNotUrgent,
-          title: l10n.quadrantNotUrgentNotImportant,
-          tasks: _filteredTasks,
-          onTaskCompletionChanged: _handleTaskCompletionChanged,
-        ),
-      ],
+        );
+      },
     );
   }
+  
+  /// 获取象限的本地化标题
+  String _getQuadrantTitle(AppLocalizations l10n, QuadrantType type) {
+    switch (type) {
+      case QuadrantType.importantUrgent:
+        return l10n.quadrantUrgentImportant;
+      case QuadrantType.importantNotUrgent:
+        return l10n.quadrantImportantNotUrgent;
+      case QuadrantType.urgentNotImportant:
+        return l10n.quadrantUrgentNotImportant;
+      case QuadrantType.notImportantNotUrgent:
+        return l10n.quadrantNotUrgentNotImportant;
+    }
+  }
 
-  /// 处理任务完成状态变更
+  /// 处理任务完成状态变更回调
   void _handleTaskCompletionChanged(QuadrantTask task, bool isCompleted) {
     _updateTaskCompletion(task, isCompleted);
   }
 
   /// 显示添加任务对话框
-  Future<void> _showAddTaskDialog(QuadrantType quadrantType) async {
+  Future<void> _showAddTaskDialog(QuadrantType? defaultQuadrantType) async {
     final result = await showDialog<Map<String, dynamic>>(
       context: context,
       builder: (context) => TaskEditDialog(
-        defaultQuadrantType: quadrantType,
+        defaultQuadrantType: defaultQuadrantType,
       ),
     );
     
-    if (result != null) {
-      setState(() {
-        _tasks.add(
-          QuadrantTask(
-            id: DateTime.now().millisecondsSinceEpoch.toString(),
-            title: result['title'] as String,
-            deadline: result['deadline'] as String?,
-            quadrantType: result['quadrantType'] as QuadrantType,
-          ),
+    if (result != null && result.containsKey('title')) {
+      try {
+        // 从象限类型转换为优先级信息
+        final quadrantType = result['quadrantType'] as QuadrantType;
+        final priorityInfo = _convertQuadrantToPriority(quadrantType);
+        
+        // 创建新任务
+        final newTask = Task(
+          title: result['title'] as String,
+          deadline: result['deadline'] as String?,
+          priority: priorityInfo['priority'] as String,
+          isPriority: priorityInfo['isPriority'] as bool,
+          isCompleted: false,
         );
-      });
+        
+        await _dbHelper.createTask(newTask);
+        await _loadTasks();
+      } catch (e) {
+        debugPrint('添加任务失败: $e');
+        if (mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(content: Text('添加任务失败: $e')),
+          );
+        }
+      }
     }
   }
 } 

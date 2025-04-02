@@ -101,14 +101,44 @@ class _HomeScreenState extends State<HomeScreen> {
 
   /// 更新任务完成状态
   Future<void> _updateTaskCompletion(Task task, bool isCompleted) async {
-    final updatedTask = task.copyWith(isCompleted: isCompleted);
-    await _dbHelper.updateTask(updatedTask);
-    setState(() {
-      final index = _tasks.indexWhere((t) => t.id == task.id);
-      if (index != -1) {
-        _tasks[index] = updatedTask;
+    try {
+      if (task.id == null) {
+        debugPrint('无法更新任务状态：任务ID为空');
+        return;
       }
-    });
+      
+      // 使用专门的方法更新任务完成状态
+      await _dbHelper.updateTaskCompletion(task.id!, isCompleted);
+      
+      // 更新本地状态
+      setState(() {
+        final index = _tasks.indexWhere((t) => t.id == task.id);
+        if (index != -1) {
+          _tasks[index] = task.copyWith(
+            status: isCompleted ? TaskStatus.completed : TaskStatus.pending,
+          );
+        }
+      });
+      
+      // 显示成功消息
+      final message = isCompleted ? '任务已完成' : '任务已恢复';
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(message),
+          duration: const Duration(seconds: 1),
+          behavior: SnackBarBehavior.floating,
+        ),
+      );
+    } catch (e) {
+      debugPrint('更新任务状态失败: $e');
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text('更新任务状态失败'),
+          behavior: SnackBarBehavior.floating,
+          backgroundColor: Colors.red,
+        ),
+      );
+    }
   }
   
   @override
@@ -194,13 +224,397 @@ class _HomeScreenState extends State<HomeScreen> {
     );
   }
 
-  /// 显示添加任务对话框
+  /// 显示添加任务对话框 -> 修改为显示底部弹出菜单
   void _showAddTaskDialog() {
-    // 暂时只是一个简单的提示，后续可以实现完整的添加任务功能
+    // 显示底部弹出菜单
+    final titleController = TextEditingController();
+    DateTime? selectedDeadline;
+    TimeOfDay? selectedReminderTime;
+    
+    showModalBottomSheet(
+      context: context,
+      isScrollControlled: true, // 允许键盘弹出时调整大小
+      builder: (BuildContext context) {
+        return _buildAddTaskBottomSheet(
+          context, 
+          titleController,
+          selectedDeadline,
+          selectedReminderTime,
+        );
+      },
+      backgroundColor: Colors.transparent, // 透明背景
+    );
+  }
+  
+  /// 构建添加任务的底部弹出菜单
+  Widget _buildAddTaskBottomSheet(
+    BuildContext context,
+    TextEditingController titleController,
+    DateTime? initialDeadline,
+    TimeOfDay? initialReminderTime,
+  ) {
+    final l10n = AppLocalizations.of(context)!;
+    final theme = Theme.of(context);
+    DateTime? selectedDeadline = initialDeadline;
+    TimeOfDay? selectedReminderTime = initialReminderTime;
+
+    // 使用StatefulBuilder以便在BottomSheet内部管理状态
+    return StatefulBuilder(
+      builder: (context, setState) {
+        return Padding(
+          padding: EdgeInsets.only(
+            bottom: MediaQuery.of(context).viewInsets.bottom,
+          ),
+          child: Container(
+            padding: const EdgeInsets.symmetric(vertical: 20.0),
+            decoration: BoxDecoration(
+              color: theme.cardColor,
+              borderRadius: const BorderRadius.only(
+                topLeft: Radius.circular(20.0),
+                topRight: Radius.circular(20.0),
+              ),
+              boxShadow: [
+                BoxShadow(
+                  color: Colors.black.withOpacity(0.05),
+                  blurRadius: 10,
+                  spreadRadius: 0,
+                ),
+              ],
+            ),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              crossAxisAlignment: CrossAxisAlignment.stretch,
+              children: [
+                // 任务输入区域
+                Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: 20.0, vertical: 10.0),
+                  child: Row(
+                    children: [
+                      // 任务状态图标（未完成圆圈）
+                      Container(
+                        width: 24.0,
+                        height: 24.0,
+                        margin: const EdgeInsets.only(right: 16.0),
+                        decoration: BoxDecoration(
+                          shape: BoxShape.circle,
+                          border: Border.all(
+                            color: theme.primaryColor.withOpacity(0.7),
+                            width: 2.0,
+                          ),
+                        ),
+                      ),
+                      
+                      // 任务标题输入框
+                      Expanded(
+                        child: TextField(
+                          controller: titleController,
+                          decoration: InputDecoration(
+                            hintText: l10n.taskTitleHint,
+                            border: InputBorder.none,
+                            contentPadding: const EdgeInsets.symmetric(vertical: 8.0),
+                          ),
+                          style: theme.textTheme.bodyLarge?.copyWith(
+                            fontWeight: FontWeight.w500,
+                          ),
+                          maxLines: 1,
+                          autofocus: true,
+                          textInputAction: TextInputAction.done,
+                          onSubmitted: (_) => _addTask(titleController.text, selectedDeadline, selectedReminderTime),
+                        ),
+                      ),
+                      
+                      // 添加任务按钮 - 改为不太醒目的颜色
+                      IconButton(
+                        icon: Icon(
+                          Icons.arrow_upward_rounded,
+                          color: theme.textTheme.bodyMedium?.color?.withOpacity(0.6),
+                          size: 28,
+                        ),
+                        onPressed: () => _addTask(titleController.text, selectedDeadline, selectedReminderTime),
+                      ),
+                    ],
+                  ),
+                ),
+                
+                const SizedBox(height: 8),
+                
+                // 分隔线
+                Divider(
+                  height: 1,
+                  thickness: 0.5,
+                  color: theme.dividerColor.withOpacity(0.5),
+                ),
+                
+                const SizedBox(height: 8),
+                
+                // 底部操作按钮栏 - 使用更简洁的行布局
+                Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: 20.0),
+                  child: Row(
+                    mainAxisAlignment: MainAxisAlignment.start,
+                    children: [
+                      // 设置截止日期按钮
+                      TextButton.icon(
+                        icon: Icon(
+                          Icons.calendar_today_outlined,
+                          size: 18,
+                          color: theme.textTheme.bodyMedium?.color?.withOpacity(0.7),
+                        ),
+                        label: Text(
+                          "截止日期",
+                          style: TextStyle(
+                            fontSize: 14,
+                            color: theme.textTheme.bodyMedium?.color?.withOpacity(0.8),
+                          ),
+                        ),
+                        style: TextButton.styleFrom(
+                          padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(16),
+                          ),
+                        ),
+                        onPressed: () async {
+                          final DateTime? picked = await showDatePicker(
+                            context: context,
+                            initialDate: selectedDeadline ?? DateTime.now(),
+                            firstDate: DateTime.now(),
+                            lastDate: DateTime(2101),
+                          );
+                          if (picked != null) {
+                            setState(() {
+                              selectedDeadline = picked;
+                            });
+                          }
+                        },
+                      ),
+                      
+                      const SizedBox(width: 8),
+                      
+                      // 提醒我按钮
+                      TextButton.icon(
+                        icon: Icon(
+                          Icons.notifications_none_outlined,
+                          size: 18,
+                          color: theme.textTheme.bodyMedium?.color?.withOpacity(0.7),
+                        ),
+                        label: Text(
+                          "提醒我",
+                          style: TextStyle(
+                            fontSize: 14,
+                            color: theme.textTheme.bodyMedium?.color?.withOpacity(0.8),
+                          ),
+                        ),
+                        style: TextButton.styleFrom(
+                          padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(16),
+                          ),
+                        ),
+                        onPressed: () async {
+                          final TimeOfDay? picked = await showTimePicker(
+                            context: context,
+                            initialTime: selectedReminderTime ?? TimeOfDay.now(),
+                          );
+                          if (picked != null) {
+                            setState(() {
+                              selectedReminderTime = picked;
+                            });
+                          }
+                        },
+                      ),
+                    ],
+                  ),
+                ),
+                
+                // 显示所选日期和时间提示
+                if (selectedDeadline != null || selectedReminderTime != null) ...[
+                  const SizedBox(height: 10),
+                  Padding(
+                    padding: const EdgeInsets.symmetric(horizontal: 20.0),
+                    child: Wrap(
+                      spacing: 8,
+                      runSpacing: 8,
+                      children: [
+                        // 显示截止日期标签
+                        if (selectedDeadline != null)
+                          Container(
+                            padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                            decoration: BoxDecoration(
+                              color: theme.textTheme.bodyMedium?.color?.withOpacity(0.1),
+                              borderRadius: BorderRadius.circular(16),
+                            ),
+                            child: Row(
+                              mainAxisSize: MainAxisSize.min,
+                              children: [
+                                Icon(
+                                  Icons.calendar_today,
+                                  size: 16,
+                                  color: theme.textTheme.bodyMedium?.color?.withOpacity(0.7),
+                                ),
+                                const SizedBox(width: 8.0),
+                                Text(
+                                  '${selectedDeadline!.year}-${selectedDeadline!.month.toString().padLeft(2, '0')}-${selectedDeadline!.day.toString().padLeft(2, '0')}',
+                                  style: theme.textTheme.bodySmall?.copyWith(
+                                    color: theme.textTheme.bodyMedium?.color?.withOpacity(0.8),
+                                    fontWeight: FontWeight.w500,
+                                  ),
+                                ),
+                                const SizedBox(width: 4),
+                                InkWell(
+                                  onTap: () {
+                                    setState(() {
+                                      selectedDeadline = null;
+                                    });
+                                  },
+                                  borderRadius: BorderRadius.circular(12),
+                                  child: Padding(
+                                    padding: const EdgeInsets.all(4.0),
+                                    child: Icon(
+                                      Icons.close,
+                                      size: 14,
+                                      color: theme.textTheme.bodyMedium?.color?.withOpacity(0.6),
+                                    ),
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),
+                          
+                        // 显示提醒时间标签
+                        if (selectedReminderTime != null)
+                          Container(
+                            padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                            decoration: BoxDecoration(
+                              color: theme.textTheme.bodyMedium?.color?.withOpacity(0.1),
+                              borderRadius: BorderRadius.circular(16),
+                            ),
+                            child: Row(
+                              mainAxisSize: MainAxisSize.min,
+                              children: [
+                                Icon(
+                                  Icons.notifications_active,
+                                  size: 16,
+                                  color: theme.textTheme.bodyMedium?.color?.withOpacity(0.7),
+                                ),
+                                const SizedBox(width: 8.0),
+                                Text(
+                                  '${selectedReminderTime!.hour.toString().padLeft(2, '0')}:${selectedReminderTime!.minute.toString().padLeft(2, '0')}',
+                                  style: theme.textTheme.bodySmall?.copyWith(
+                                    color: theme.textTheme.bodyMedium?.color?.withOpacity(0.8),
+                                    fontWeight: FontWeight.w500,
+                                  ),
+                                ),
+                                const SizedBox(width: 4),
+                                InkWell(
+                                  onTap: () {
+                                    setState(() {
+                                      selectedReminderTime = null;
+                                    });
+                                  },
+                                  borderRadius: BorderRadius.circular(12),
+                                  child: Padding(
+                                    padding: const EdgeInsets.all(4.0),
+                                    child: Icon(
+                                      Icons.close,
+                                      size: 14,
+                                      color: theme.textTheme.bodyMedium?.color?.withOpacity(0.6),
+                                    ),
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),
+                      ],
+                    ),
+                  ),
+                ],
+              ],
+            ),
+          ),
+        );
+      },
+    );
+  }
+  
+  /// 添加新任务
+  Future<void> _addTask(String title, DateTime? deadline, TimeOfDay? reminderTime) async {
+    if (title.trim().isEmpty) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(AppLocalizations.of(context)!.taskTitleCannotBeEmpty),
+          behavior: SnackBarBehavior.floating,
+        ),
+      );
+      return;
+    }
+    
+    // 格式化截止日期（如果存在）
+    String? formattedDeadline;
+    if (deadline != null) {
+      formattedDeadline = deadline.toIso8601String();
+    }
+    
+    // 格式化提醒时间（如果存在）
+    String? formattedReminderTime;
+    if (reminderTime != null) {
+      final now = DateTime.now();
+      final reminderDateTime = DateTime(
+        now.year, 
+        now.month, 
+        now.day, 
+        reminderTime.hour, 
+        reminderTime.minute
+      );
+      formattedReminderTime = reminderDateTime.toIso8601String();
+    }
+    
+    // 创建新任务
+    final newTask = Task(
+      title: title.trim(),
+      deadline: formattedDeadline,
+      reminderTime: formattedReminderTime,
+      priority: PriorityLevel.medium.name,
+      status: TaskStatus.pending, // 默认为待完成状态
+      isPriority: false,         // 默认非优先级任务
+    );
+    
+    try {
+      // 保存到数据库
+      final id = await _dbHelper.createTask(newTask);
+      
+      if (id > 0) {
+        // 关闭底部弹出菜单
+        Navigator.pop(context); 
+        
+        // 显示成功提示
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('任务已添加'),
+            behavior: SnackBarBehavior.floating,
+            backgroundColor: Colors.green,
+          ),
+        );
+        
+        // 刷新任务列表
+        setState(() {
+          _loadTasks();
+        });
+      } else {
+        _showErrorMessage();
+      }
+    } catch (e) {
+      debugPrint('添加任务出错: $e');
+      _showErrorMessage();
+    }
+  }
+  
+  /// 显示错误消息
+  void _showErrorMessage() {
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
-        content: Text(AppLocalizations.of(context)!.addNewTask),
-        duration: const Duration(seconds: 2),
+        content: Text(AppLocalizations.of(context)!.failedToAddTask),
+        behavior: SnackBarBehavior.floating,
+        backgroundColor: Colors.red,
       ),
     );
   }
@@ -418,11 +832,31 @@ class _HomeScreenState extends State<HomeScreen> {
                 if (task.deadline != null) ...[
                   const SizedBox(height: 4),
                   Text(
-                    task.deadline!,
+                    _formatDateTime(task.deadline!, isDate: true),
                     style: TextStyle(
                       fontSize: 14,
                       color: theme.textTheme.bodySmall?.color,
                     ),
+                  ),
+                ],
+                if (task.reminderTime != null) ...[
+                  const SizedBox(height: 4),
+                  Row(
+                    children: [
+                      Icon(
+                        Icons.notifications,
+                        size: 14,
+                        color: theme.primaryColor.withOpacity(0.7),
+                      ),
+                      const SizedBox(width: 4),
+                      Text(
+                        _formatDateTime(task.reminderTime!, isTime: true),
+                        style: TextStyle(
+                          fontSize: 14,
+                          color: theme.primaryColor.withOpacity(0.9),
+                        ),
+                      ),
+                    ],
                   ),
                 ],
               ],
@@ -449,6 +883,27 @@ class _HomeScreenState extends State<HomeScreen> {
         ],
       ),
     );
+  }
+  
+  /// 格式化日期时间字符串为友好格式
+  String _formatDateTime(String isoString, {bool isDate = false, bool isTime = false}) {
+    try {
+      final dateTime = DateTime.parse(isoString);
+      
+      if (isDate) {
+        // 仅格式化日期部分
+        return '${dateTime.year}年${dateTime.month}月${dateTime.day}日';
+      } else if (isTime) {
+        // 仅格式化时间部分
+        return '${dateTime.hour.toString().padLeft(2, '0')}:${dateTime.minute.toString().padLeft(2, '0')}';
+      } else {
+        // 格式化完整日期时间
+        return '${dateTime.year}年${dateTime.month}月${dateTime.day}日 ${dateTime.hour}:${dateTime.minute}';
+      }
+    } catch (e) {
+      // 如果解析失败，返回原始字符串
+      return isoString;
+    }
   }
   
   /// 获取优先级颜色，根据深色模式调整亮度
