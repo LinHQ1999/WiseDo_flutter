@@ -1,9 +1,11 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/cupertino.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 import '../services/service_locator.dart';
 import '../services/preference_service.dart';
 import '../services/theme_service.dart';
+import '../constants/app_theme.dart';
 
 /// 设置屏幕
 class SettingsScreen extends StatefulWidget {
@@ -67,250 +69,257 @@ class _SettingsScreenState extends State<SettingsScreen> {
       'en': 'English',
     };
 
-    return SingleChildScrollView(
-      padding: const EdgeInsets.all(16.0),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Text(
-            l10n.settingsTitle, 
-            style: theme.textTheme.headlineMedium?.copyWith(
-              fontWeight: FontWeight.bold,
-            ),
+    return CupertinoPageScaffold(
+      navigationBar: CupertinoNavigationBar(
+        middle: Text(l10n.settingsTitle),
+        backgroundColor: theme.scaffoldBackgroundColor,
+        border: Border(
+          bottom: BorderSide(
+            color: theme.dividerColor,
+            width: 0.5,
           ),
-          const SizedBox(height: 24),
-          
-          // 通知设置部分
-          _buildSettingsSection(
-            l10n.settingsNotifications, 
-            theme, 
-            isDark, 
-            [ 
-              _buildSwitchTile(
-                l10n.settingsEnableNotifications, 
-                l10n.settingsEnableNotificationsDesc, 
-                _notificationsEnabled,
-                theme,
-                (value) async {
-                  await _preferenceService.set(PreferenceKeys.notificationsEnabled, value);
-                  setState(() {
-                    _notificationsEnabled = value;
-                  });
-                },
-              ),
-              _buildSwitchTile(
-                l10n.settingsSoundAlerts, 
-                l10n.settingsSoundAlertsDesc, 
-                _soundEnabled,
-                theme,
-                (value) async {
-                  await _preferenceService.set('soundEnabled', value);
-                  setState(() {
-                    _soundEnabled = value;
-                  });
-                },
-              ),
-            ]
-          ),
-          const SizedBox(height: 24),
-          
-          // 显示设置部分
-          _buildSettingsSection(
-            l10n.settingsDisplay, 
-            theme, 
-            isDark, 
-            [ 
-              _buildSwitchTile(
-                l10n.settingsDarkMode, 
-                l10n.settingsDarkModeDesc, 
-                _darkModeEnabled,
-                theme,
-                (value) async {
-                  await _themeService.setDarkMode(value);
-                  setState(() {
-                    _darkModeEnabled = value;
-                  });
-                },
-              ),
-              _buildDropdownTile(
-                l10n.settingsLanguage, 
-                l10n.settingsLanguageDesc, 
-                currentLanguageCode,
-                languageOptions, 
-                languageDisplayNames,
-                theme,
-                (value) async {
-                  if (value != null && value != currentLanguageCode) {
-                    await _preferenceService.setLanguage(value);
-                    widget.onLanguageChanged(Locale(value));
-                  }
-                },
-              ),
-            ]
-          ),
-          const SizedBox(height: 24),
-          
-          // 任务设置部分
-          _buildSettingsSection(
-            l10n.settingsTaskManagement, 
-            theme, 
-            isDark, 
-            [ 
-              _buildSwitchTile(
-                l10n.settingsShowCompletedTasks, 
-                l10n.settingsShowCompletedTasksDesc, 
-                _preferenceService.get<bool>(PreferenceKeys.showCompletedTasks) ?? true,
-                theme,
-                (value) async {
-                  await _preferenceService.set(PreferenceKeys.showCompletedTasks, value);
-                  setState(() {});
-                },
-              ),
-              _buildSwitchTile(
-                l10n.settingsAutoDeleteCompleted, 
-                l10n.settingsAutoDeleteCompletedDesc, 
-                _preferenceService.get<bool>(PreferenceKeys.autoDeleteCompleted) ?? false,
-                theme,
-                (value) async {
-                  await _preferenceService.set(PreferenceKeys.autoDeleteCompleted, value);
-                  setState(() {});
-                },
-              ),
-            ]
-          ),
-          const SizedBox(height: 24),
-          
-          // 账户设置部分
-          _buildSettingsSection(
-            l10n.settingsAccount, 
-            theme, 
-            isDark, 
-            [ 
-              _buildActionTile(
-                l10n.settingsPersonalInfo, 
-                l10n.settingsPersonalInfoDesc, 
-                Icons.person,
-                theme,
-                () {
-                  _showUnderDevelopmentDialog(context);
-                },
-              ),
-              _buildActionTile(
-                l10n.settingsSync, 
-                l10n.settingsSyncDesc, 
-                Icons.sync,
-                theme,
-                () {
-                  _showUnderDevelopmentDialog(context);
-                },
-              ),
-              _buildActionTile(
-                l10n.settingsLogout, 
-                l10n.settingsLogoutDesc, 
-                Icons.logout,
-                theme, 
-                () {
-                  _showUnderDevelopmentDialog(context);
-                },
-                color: isDark ? Colors.red[300] : Colors.red,
-              ),
-            ]
-          ),
-          const SizedBox(height: 24),
-          
-          // 关于部分
-          _buildSettingsSection(
-            l10n.settingsAbout, 
-            theme, 
-            isDark, 
-            [ 
-              _buildActionTile(
-                l10n.settingsPrivacyPolicy, 
-                l10n.settingsPrivacyPolicyDesc, 
-                Icons.privacy_tip,
-                theme,
-                () {
-                  _showUnderDevelopmentDialog(context);
-                },
-              ),
-              _buildActionTile(
-                l10n.settingsTermsOfService, 
-                l10n.settingsTermsOfServiceDesc, 
-                Icons.description,
-                theme,
-                () {
-                  _showUnderDevelopmentDialog(context);
-                },
-              ),
-              _buildActionTile(
-                l10n.settingsFeedback, 
-                l10n.settingsFeedbackDesc, 
-                Icons.feedback,
-                theme,
-                () {
-                  _showUnderDevelopmentDialog(context);
-                },
-              ),
-            ]
-          ),
-          const SizedBox(height: 24),
-          
-          // 版本信息
-          Center(
-            child: Text(
-              l10n.settingsUnderDevelopment,
-              style: theme.textTheme.bodyMedium?.copyWith(
-                fontStyle: FontStyle.italic,
-              ),
-            ),
-          ),
-          const SizedBox(height: 16),
-          Center(
-            child: Text(
-              l10n.settingsVersion('1.0.0 (Beta)'),
-              style: theme.textTheme.bodySmall?.copyWith(
-                color: isDark ? Colors.grey[400] : Colors.grey,
-              ),
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-
-  /// 构建设置部分
-  Widget _buildSettingsSection(String title, ThemeData theme, bool isDark, List<Widget> children) {
-    return Card(
-      elevation: 2.0,
-      color: theme.cardColor,
-      shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.circular(12),
-      ),
-      child: Padding(
-        padding: const EdgeInsets.all(16.0),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Text(
-              title,
-              style: theme.textTheme.titleMedium?.copyWith(
-                fontWeight: FontWeight.bold,
-              ),
-            ),
-            const SizedBox(height: 16),
-            ...children,
-          ],
         ),
       ),
+      child: SafeArea(
+        child: ListView(
+          padding: const EdgeInsets.symmetric(vertical: 16.0),
+          children: [
+            const SizedBox(height: 16),
+            
+            // 通知设置部分
+            _buildSettingsSection(
+              l10n.settingsNotifications, 
+              theme, 
+              isDark, 
+              [ 
+                _buildSwitchTile(
+                  l10n.settingsEnableNotifications, 
+                  l10n.settingsEnableNotificationsDesc, 
+                  _notificationsEnabled,
+                  theme,
+                  (value) async {
+                    await _preferenceService.set(PreferenceKeys.notificationsEnabled, value);
+                    setState(() {
+                      _notificationsEnabled = value;
+                    });
+                  },
+                ),
+                _buildSwitchTile(
+                  l10n.settingsSoundAlerts, 
+                  l10n.settingsSoundAlertsDesc, 
+                  _soundEnabled,
+                  theme,
+                  (value) async {
+                    await _preferenceService.set('soundEnabled', value);
+                    setState(() {
+                      _soundEnabled = value;
+                    });
+                  },
+                ),
+              ]
+            ),
+            
+            // 显示设置部分
+            _buildSettingsSection(
+              l10n.settingsDisplay, 
+              theme, 
+              isDark, 
+              [ 
+                _buildSwitchTile(
+                  l10n.settingsDarkMode, 
+                  l10n.settingsDarkModeDesc, 
+                  _darkModeEnabled,
+                  theme,
+                  (value) async {
+                    await _themeService.setDarkMode(value);
+                    setState(() {
+                      _darkModeEnabled = value;
+                    });
+                  },
+                ),
+                _buildDropdownTile(
+                  l10n.settingsLanguage, 
+                  l10n.settingsLanguageDesc, 
+                  currentLanguageCode,
+                  languageOptions, 
+                  languageDisplayNames,
+                  theme,
+                  (value) async {
+                    if (value != null && value != currentLanguageCode) {
+                      await _preferenceService.setLanguage(value);
+                      widget.onLanguageChanged(Locale(value));
+                    }
+                  },
+                ),
+              ]
+            ),
+            
+            // 任务设置部分
+            _buildSettingsSection(
+              l10n.settingsTaskManagement, 
+              theme, 
+              isDark, 
+              [ 
+                _buildSwitchTile(
+                  l10n.settingsShowCompletedTasks, 
+                  l10n.settingsShowCompletedTasksDesc, 
+                  _preferenceService.get<bool>(PreferenceKeys.showCompletedTasks) ?? true,
+                  theme,
+                  (value) async {
+                    await _preferenceService.set(PreferenceKeys.showCompletedTasks, value);
+                    setState(() {});
+                  },
+                ),
+                _buildSwitchTile(
+                  l10n.settingsAutoDeleteCompleted, 
+                  l10n.settingsAutoDeleteCompletedDesc, 
+                  _preferenceService.get<bool>(PreferenceKeys.autoDeleteCompleted) ?? false,
+                  theme,
+                  (value) async {
+                    await _preferenceService.set(PreferenceKeys.autoDeleteCompleted, value);
+                    setState(() {});
+                  },
+                ),
+              ]
+            ),
+            
+            // 账户设置部分
+            _buildSettingsSection(
+              l10n.settingsAccount, 
+              theme, 
+              isDark, 
+              [ 
+                _buildActionTile(
+                  l10n.settingsPersonalInfo, 
+                  l10n.settingsPersonalInfoDesc, 
+                  CupertinoIcons.person_crop_circle,
+                  theme,
+                  () {
+                    _showUnderDevelopmentDialog(context);
+                  },
+                ),
+                _buildActionTile(
+                  l10n.settingsSync, 
+                  l10n.settingsSyncDesc, 
+                  CupertinoIcons.cloud_upload,
+                  theme,
+                  () {
+                    _showUnderDevelopmentDialog(context);
+                  },
+                ),
+                _buildActionTile(
+                  l10n.settingsLogout, 
+                  l10n.settingsLogoutDesc, 
+                  CupertinoIcons.square_arrow_left,
+                  theme, 
+                  () {
+                    _showUnderDevelopmentDialog(context);
+                  },
+                  color: AppColors.redColor,
+                ),
+              ]
+            ),
+            
+            // 关于部分
+            _buildSettingsSection(
+              l10n.settingsAbout, 
+              theme, 
+              isDark, 
+              [ 
+                _buildActionTile(
+                  l10n.settingsPrivacyPolicy, 
+                  l10n.settingsPrivacyPolicyDesc, 
+                  CupertinoIcons.lock_shield,
+                  theme,
+                  () {
+                    _showUnderDevelopmentDialog(context);
+                  },
+                ),
+                _buildActionTile(
+                  l10n.settingsTermsOfService, 
+                  l10n.settingsTermsOfServiceDesc, 
+                  CupertinoIcons.doc_text,
+                  theme,
+                  () {
+                    _showUnderDevelopmentDialog(context);
+                  },
+                ),
+                _buildActionTile(
+                  l10n.settingsFeedback, 
+                  l10n.settingsFeedbackDesc, 
+                  CupertinoIcons.bubble_left_bubble_right,
+                  theme,
+                  () {
+                    _showUnderDevelopmentDialog(context);
+                  },
+                ),
+              ]
+            ),
+          ]
+        )
+      ),
     );
   }
 
-  /// 构建开关设置项
+  /// 构建设置项分组
+  Widget _buildSettingsSection(
+    String title,
+    ThemeData theme,
+    bool isDark,
+    List<Widget> children,
+  ) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+          child: Text(
+            title,
+            style: TextStyle(
+              fontSize: 15,
+              fontWeight: FontWeight.w600,
+              color: isDark ? Colors.grey[400] : Colors.grey[700],
+            ),
+          ),
+        ),
+        Container(
+          margin: const EdgeInsets.symmetric(horizontal: 16),
+          decoration: BoxDecoration(
+            color: theme.cardColor,
+            borderRadius: BorderRadius.circular(12),
+            border: Border.all(
+              color: isDark ? Colors.grey[800]! : Colors.grey[300]!,
+              width: 0.5,
+            ),
+          ),
+          child: ListView.separated(
+            physics: const NeverScrollableScrollPhysics(),
+            shrinkWrap: true,
+            itemCount: children.length,
+            separatorBuilder: (context, index) => Divider(
+              height: 1,
+              indent: 16,
+              color: isDark ? Colors.grey[800]! : Colors.grey[300]!,
+            ),
+            itemBuilder: (context, index) {
+              return Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                child: children[index],
+              );
+            },
+          ),
+        ),
+        const SizedBox(height: 24),
+      ],
+    );
+  }
+
+  /// 构建带开关的设置项
   Widget _buildSwitchTile(
     String title, 
     String subtitle, 
-    bool value,
-    ThemeData theme,
+    bool value, 
+    ThemeData theme, 
     Function(bool) onChanged,
   ) {
     return ListTile(
@@ -323,15 +332,15 @@ class _SettingsScreenState extends State<SettingsScreen> {
         subtitle,
         style: theme.textTheme.bodySmall,
       ),
-      trailing: Switch(
+      trailing: CupertinoSwitch(
         value: value,
         onChanged: onChanged,
-        activeColor: theme.primaryColor,
+        activeColor: theme.colorScheme.secondary, // 使用iOS绿色作为激活颜色
       ),
     );
   }
-  
-  /// 构建下拉选择设置项 
+
+  /// 构建带下拉菜单的设置项
   Widget _buildDropdownTile(
     String title, 
     String subtitle, 
@@ -351,20 +360,63 @@ class _SettingsScreenState extends State<SettingsScreen> {
         subtitle,
         style: theme.textTheme.bodySmall,
       ),
-      trailing: DropdownButton<String>(
-        value: value,
-        onChanged: onChanged,
-        underline: Container(),
-        dropdownColor: theme.cardColor,
-        items: options.map((String optionCode) {
-          return DropdownMenuItem<String>(
-            value: optionCode,
-            child: Text(
-              displayNames[optionCode] ?? optionCode,
-              style: theme.textTheme.bodyMedium,
-            ), 
+      trailing: CupertinoButton(
+        padding: EdgeInsets.zero,
+        onPressed: () {
+          showCupertinoModalPopup(
+            context: context,
+            builder: (context) {
+              return Container(
+                height: 216,
+                padding: const EdgeInsets.only(top: 6.0),
+                margin: EdgeInsets.only(
+                  bottom: MediaQuery.of(context).viewInsets.bottom,
+                ),
+                color: CupertinoColors.systemBackground.resolveFrom(context),
+                child: SafeArea(
+                  top: false,
+                  child: CupertinoPicker(
+                    itemExtent: 32.0,
+                    scrollController: FixedExtentScrollController(
+                      initialItem: options.indexOf(value),
+                    ),
+                    onSelectedItemChanged: (int index) {
+                      onChanged(options[index]);
+                    },
+                    children: options.map((String optionCode) {
+                      return Center(
+                        child: Text(
+                          displayNames[optionCode] ?? optionCode,
+                          style: TextStyle(
+                            color: theme.textTheme.bodyMedium?.color,
+                          ),
+                        ),
+                      );
+                    }).toList(),
+                  ),
+                ),
+              );
+            },
           );
-        }).toList(),
+        },
+        child: Row(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Text(
+              displayNames[value] ?? value,
+              style: TextStyle(
+                color: theme.textTheme.bodyMedium?.color?.withOpacity(0.7),
+                fontSize: 16,
+              ),
+            ),
+            const SizedBox(width: 4),
+            Icon(
+              CupertinoIcons.right_chevron,
+              size: 16,
+              color: theme.textTheme.bodyMedium?.color?.withOpacity(0.5),
+            ),
+          ],
+        ),
       ),
     );
   }
@@ -382,9 +434,18 @@ class _SettingsScreenState extends State<SettingsScreen> {
     
     return ListTile(
       contentPadding: EdgeInsets.zero,
-      leading: Icon(
-        icon,
-        color: iconColor,
+      leading: Container(
+        width: 32,
+        height: 32,
+        decoration: BoxDecoration(
+          color: iconColor.withOpacity(0.15),
+          borderRadius: BorderRadius.circular(8),
+        ),
+        child: Icon(
+          icon,
+          color: iconColor,
+          size: 20,
+        ),
       ),
       title: Text(
         title,
@@ -397,29 +458,31 @@ class _SettingsScreenState extends State<SettingsScreen> {
         style: theme.textTheme.bodySmall,
       ),
       trailing: Icon(
-        Icons.arrow_forward_ios,
+        CupertinoIcons.right_chevron,
         size: 16,
-        color: theme.iconTheme.color?.withOpacity(0.7),
+        color: theme.textTheme.bodyMedium?.color?.withOpacity(0.5),
       ),
       onTap: onTap,
     );
   }
 
-  /// 显示"功能开发中"对话框
-  void _showUnderDevelopmentDialog(BuildContext context) { 
+  /// 显示"正在开发中"对话框
+  void _showUnderDevelopmentDialog(BuildContext context) {
     final l10n = AppLocalizations.of(context)!;
-    showDialog(
+    showCupertinoDialog(
       context: context,
-      builder: (context) => AlertDialog(
-        title: Text(l10n.dialogTitleHint), 
-        content: Text(l10n.dialogContentUnderDevelopment), 
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.of(context).pop(),
-            child: Text(l10n.dialogButtonOK), 
-          ),
-        ],
-      ),
+      builder: (context) {
+        return CupertinoAlertDialog(
+          title: Text(l10n.dialogTitleHint),
+          content: Text(l10n.dialogContentUnderDevelopment),
+          actions: [
+            CupertinoDialogAction(
+              child: Text(l10n.dialogButtonOK),
+              onPressed: () => Navigator.pop(context),
+            ),
+          ],
+        );
+      },
     );
   }
 } 

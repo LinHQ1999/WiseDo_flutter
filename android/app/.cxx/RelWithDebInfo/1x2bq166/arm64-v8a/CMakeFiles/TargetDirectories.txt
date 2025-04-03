@@ -1,0 +1,2 @@
+D:/start-up/WiseDo/WiseDo_flutter/android/app/.cxx/RelWithDebInfo/1x2bq166/arm64-v8a/CMakeFiles/edit_cache.dir
+D:/start-up/WiseDo/WiseDo_flutter/android/app/.cxx/RelWithDebInfo/1x2bq166/arm64-v8a/CMakeFiles/rebuild_cache.dir

@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/cupertino.dart';
 
 /// 尺寸常量 - 用于统一管理应用中的所有尺寸
 class Dimens {
@@ -33,95 +34,151 @@ class Dimens {
   // 高度
   static const double buttonHeight = 48.0;
   static const double inputHeight = 56.0;
-  static const double appBarHeight = 56.0;
-  static const double cardElevation = 2.0;
+  static const double appBarHeight = 44.0; // iOS标准高度
+  static const double cardElevation = 0.0; // iOS一般没有阴影
   
   // 其他
   static const double dividerThickness = 0.5;
 }
 
-/// 颜色常量 - 统一管理应用中的所有颜色
+/// 颜色常量 - 统一管理应用中的所有颜色，更新为iOS风格
 class AppColors {
-  // 主题色
-  static const Color primaryColor = Colors.blue;
-  static const Color primaryLightColor = Color(0xFF64B5F6); // Colors.blue[300]
-  static const Color primaryDarkColor = Color(0xFF1976D2); // Colors.blue[700]
-  static const Color accentColor = Colors.blueAccent;
+  // iOS标准色彩系统
+  static const Color primaryColor = Color(0xFF007AFF); // iOS蓝色
+  static const Color primaryLightColor = Color(0xFF5AC8FA); // iOS浅蓝色
+  static const Color primaryDarkColor = Color(0xFF0062CC); // iOS深蓝色
+  static const Color accentColor = Color(0xFF34C759); // iOS绿色
+  
+  // 辅助色彩
+  static const Color redColor = Color(0xFFFF3B30); // iOS红色
+  static const Color orangeColor = Color(0xFFFF9500); // iOS橙色
+  static const Color yellowColor = Color(0xFFFFCC00); // iOS黄色
+  static const Color purpleColor = Color(0xFF5856D6); // iOS紫色
+  static const Color pinkColor = Color(0xFFFF2D55); // iOS粉色
   
   // 背景色
-  static const Color backgroundLight = Color(0xFFF5F5F5); // Colors.grey[100]
-  static const Color backgroundDark = Color(0xFF121212);
+  static const Color backgroundLight = Color(0xFFF8F8F8); // iOS浅灰背景
+  static const Color backgroundDark = Color(0xFF000000); // iOS深色模式背景
   
   // 卡片色
   static const Color cardLight = Colors.white;
-  static const Color cardDark = Color(0xFF1E1E1E);
+  static const Color cardDark = Color(0xFF1C1C1E); // iOS深色模式卡片背景
   
   // 文本色
-  static const Color textPrimaryLight = Color(0xFF212121);
-  static const Color textSecondaryLight = Color(0xFF757575);
+  static const Color textPrimaryLight = Color(0xFF000000);
+  static const Color textSecondaryLight = Color(0xFF8E8E93); // iOS次要文本
+  static const Color textTertiaryLight = Color(0xFFC7C7CC); // iOS三级文本
   static const Color textPrimaryDark = Colors.white;
-  static const Color textSecondaryDark = Color(0xFFBDBDBD);
+  static const Color textSecondaryDark = Color(0xFF8E8E93);
+  static const Color textTertiaryDark = Color(0xFF48484A);
   
   // 功能色
-  static const Color success = Color(0xFF4CAF50);
-  static const Color warning = Color(0xFFFFC107);
-  static const Color error = Color(0xFFF44336);
-  static const Color info = Color(0xFF2196F3);
+  static const Color success = Color(0xFF34C759); // iOS绿色
+  static const Color warning = Color(0xFFFF9500); // iOS橙色
+  static const Color error = Color(0xFFFF3B30); // iOS红色
+  static const Color info = Color(0xFF5AC8FA); // iOS浅蓝色
   
   // 象限颜色
-  static const Color importantUrgentLight = Color(0xFFFF5252);
-  static const Color importantUrgentDark = Color(0xFFE57373);
-  static const Color importantNotUrgentLight = Color(0xFF2196F3);
-  static const Color importantNotUrgentDark = Color(0xFF64B5F6);
-  static const Color urgentNotImportantLight = Color(0xFFFF9800);
-  static const Color urgentNotImportantDark = Color(0xFFFFB74D);
-  static const Color notImportantNotUrgentLight = Color(0xFF4CAF50);
-  static const Color notImportantNotUrgentDark = Color(0xFF81C784);
+  static const Color importantUrgentLight = Color(0xFFFF3B30); // iOS红色
+  static const Color importantUrgentDark = Color(0xFFFF453A);
+  static const Color importantNotUrgentLight = Color(0xFF007AFF); // iOS蓝色
+  static const Color importantNotUrgentDark = Color(0xFF0A84FF);
+  static const Color urgentNotImportantLight = Color(0xFFFF9500); // iOS橙色
+  static const Color urgentNotImportantDark = Color(0xFFFF9F0A);
+  static const Color notImportantNotUrgentLight = Color(0xFF34C759); // iOS绿色
+  static const Color notImportantNotUrgentDark = Color(0xFF30D158);
+  
+  // 分隔线颜色
+  static const Color separatorLight = Color(0xFFE5E5EA); // iOS分隔线
+  static const Color separatorDark = Color(0xFF38383A);
 }
 
-/// 文本样式常量 - 预定义常用的文本样式
+/// 文本样式常量 - 预定义常用的文本样式，更新为iOS风格
 class TextStyles {
-  // 标题样式
-  static const TextStyle heading1 = TextStyle(
-    fontSize: Dimens.fontSizeXXLarge,
-    fontWeight: FontWeight.bold,
+  // iOS标题样式
+  static const TextStyle largeTitle = TextStyle(
+    fontSize: 34.0,
+    fontWeight: FontWeight.w700,
+    letterSpacing: 0.37,
+    height: 1.2,
   );
   
-  static const TextStyle heading2 = TextStyle(
-    fontSize: Dimens.fontSizeXLarge,
-    fontWeight: FontWeight.bold,
+  static const TextStyle title1 = TextStyle(
+    fontSize: 28.0,
+    fontWeight: FontWeight.w700,
+    letterSpacing: 0.36,
+    height: 1.2,
   );
   
-  static const TextStyle heading3 = TextStyle(
-    fontSize: Dimens.fontSizeLarge,
-    fontWeight: FontWeight.bold,
+  static const TextStyle title2 = TextStyle(
+    fontSize: 22.0,
+    fontWeight: FontWeight.w700,
+    letterSpacing: 0.35,
+    height: 1.2,
+  );
+  
+  static const TextStyle title3 = TextStyle(
+    fontSize: 20.0,
+    fontWeight: FontWeight.w600,
+    letterSpacing: 0.38,
+    height: 1.2,
   );
   
   // 正文样式
-  static const TextStyle body1 = TextStyle(
-    fontSize: Dimens.fontSizeMedium,
+  static const TextStyle headline = TextStyle(
+    fontSize: 17.0,
+    fontWeight: FontWeight.w600,
+    letterSpacing: -0.41,
+    height: 1.3,
   );
   
-  static const TextStyle body2 = TextStyle(
-    fontSize: Dimens.fontSizeRegular,
-  );
-  
-  // 次要文本
-  static const TextStyle caption = TextStyle(
-    fontSize: Dimens.fontSizeSmall,
-  );
-  
-  // 按钮文本
-  static const TextStyle button = TextStyle(
-    fontSize: Dimens.fontSizeRegular,
+  static const TextStyle body = TextStyle(
+    fontSize: 17.0,
     fontWeight: FontWeight.w500,
+    letterSpacing: -0.24,
+    height: 1.3,
+  );
+  
+  static const TextStyle callout = TextStyle(
+    fontSize: 16.0,
+    fontWeight: FontWeight.w500,
+    letterSpacing: -0.32,
+    height: 1.3,
+  );
+  
+  static const TextStyle subheadline = TextStyle(
+    fontSize: 15.0,
+    fontWeight: FontWeight.w500,
+    letterSpacing: -0.24,
+    height: 1.3,
+  );
+  
+  static const TextStyle footnote = TextStyle(
+    fontSize: 13.0,
+    fontWeight: FontWeight.w500,
+    letterSpacing: -0.08,
+    height: 1.2,
+  );
+  
+  static const TextStyle caption1 = TextStyle(
+    fontSize: 12.0,
+    fontWeight: FontWeight.w500,
+    letterSpacing: 0,
+    height: 1.2,
+  );
+  
+  static const TextStyle caption2 = TextStyle(
+    fontSize: 11.0,
+    fontWeight: FontWeight.w500,
+    letterSpacing: 0.06,
+    height: 1.2,
   );
 }
 
 /// 应用主题管理
 class AppTheme {
-  // 默认字体
-  static const String defaultFontFamily = '微软雅黑';
+  // 默认字体，使用系统字体
+  static const String defaultFontFamily = '.SF Pro Text';
   
   /// 获取文本主题
   static TextTheme _getTextTheme(Brightness brightness) {
@@ -130,19 +187,21 @@ class AppTheme {
     final Color secondaryTextColor = isDark ? AppColors.textSecondaryDark : AppColors.textSecondaryLight;
     
     return TextTheme(
-      displayLarge: TextStyles.heading1.copyWith(color: primaryTextColor),
-      displayMedium: TextStyles.heading2.copyWith(color: primaryTextColor),
-      displaySmall: TextStyles.heading3.copyWith(color: primaryTextColor),
-      headlineLarge: TextStyles.heading1.copyWith(color: primaryTextColor),
-      headlineMedium: TextStyles.heading2.copyWith(color: primaryTextColor),
-      headlineSmall: TextStyles.heading3.copyWith(color: primaryTextColor),
-      titleLarge: TextStyles.heading3.copyWith(color: primaryTextColor),
-      titleMedium: TextStyles.body1.copyWith(color: primaryTextColor),
-      titleSmall: TextStyles.body2.copyWith(color: primaryTextColor),
-      bodyLarge: TextStyles.body1.copyWith(color: primaryTextColor),
-      bodyMedium: TextStyles.body2.copyWith(color: primaryTextColor),
-      bodySmall: TextStyles.caption.copyWith(color: secondaryTextColor),
-      labelLarge: TextStyles.button.copyWith(color: primaryTextColor),
+      displayLarge: TextStyles.largeTitle.copyWith(color: primaryTextColor),
+      displayMedium: TextStyles.title1.copyWith(color: primaryTextColor),
+      displaySmall: TextStyles.title2.copyWith(color: primaryTextColor),
+      headlineLarge: TextStyles.title1.copyWith(color: primaryTextColor),
+      headlineMedium: TextStyles.title2.copyWith(color: primaryTextColor),
+      headlineSmall: TextStyles.title3.copyWith(color: primaryTextColor),
+      titleLarge: TextStyles.headline.copyWith(color: primaryTextColor),
+      titleMedium: TextStyles.body.copyWith(color: primaryTextColor),
+      titleSmall: TextStyles.callout.copyWith(color: primaryTextColor),
+      bodyLarge: TextStyles.body.copyWith(color: primaryTextColor),
+      bodyMedium: TextStyles.callout.copyWith(color: primaryTextColor),
+      bodySmall: TextStyles.footnote.copyWith(color: secondaryTextColor),
+      labelLarge: TextStyles.subheadline.copyWith(color: primaryTextColor),
+    ).apply(
+      fontFamily: defaultFontFamily,
     );
   }
   
@@ -151,6 +210,7 @@ class AppTheme {
     return ThemeData(
       brightness: Brightness.light,
       primaryColor: AppColors.primaryColor,
+      primarySwatch: Colors.blue,
       colorScheme: const ColorScheme.light(
         primary: AppColors.primaryColor,
         secondary: AppColors.accentColor,
@@ -162,42 +222,131 @@ class AppTheme {
       ),
       scaffoldBackgroundColor: AppColors.backgroundLight,
       cardColor: AppColors.cardLight,
-      dividerColor: Colors.grey[300],
+      dividerColor: AppColors.separatorLight,
+      indicatorColor: AppColors.primaryColor,
       fontFamily: defaultFontFamily,
       textTheme: _getTextTheme(Brightness.light),
-      appBarTheme: const AppBarTheme(
-        backgroundColor: AppColors.primaryColor,
-        foregroundColor: Colors.white,
-        elevation: Dimens.cardElevation,
+      // iOS风格的AppBar
+      appBarTheme: AppBarTheme(
+        backgroundColor: AppColors.backgroundLight,
+        foregroundColor: AppColors.primaryColor,
+        elevation: 0,
+        centerTitle: true,
+        titleTextStyle: TextStyles.headline.copyWith(
+          color: AppColors.textPrimaryLight,
+          fontWeight: FontWeight.w600,
+        ),
+        iconTheme: const IconThemeData(
+          color: AppColors.primaryColor,
+        ),
       ),
+      // iOS风格的底部导航栏
       bottomNavigationBarTheme: const BottomNavigationBarThemeData(
         selectedItemColor: AppColors.primaryColor,
         unselectedItemColor: AppColors.textSecondaryLight,
         backgroundColor: AppColors.cardLight,
-        elevation: Dimens.cardElevation,
+        elevation: 0,
+        type: BottomNavigationBarType.fixed,
+        showSelectedLabels: true,
+        showUnselectedLabels: true,
+        selectedLabelStyle: TextStyles.caption2,
+        unselectedLabelStyle: TextStyles.caption2,
       ),
+      // 无阴影扁平卡片
       cardTheme: CardTheme(
-        elevation: Dimens.cardElevation,
+        elevation: 0,
         shape: RoundedRectangleBorder(
           borderRadius: BorderRadius.circular(Dimens.radiusMedium),
+          side: const BorderSide(
+            color: AppColors.separatorLight,
+            width: 0.5,
+          ),
         ),
+        color: AppColors.cardLight,
+        shadowColor: Colors.black.withOpacity(0.1),
       ),
+      // iOS风格输入框
       inputDecorationTheme: InputDecorationTheme(
-        border: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(Dimens.radiusRegular),
-        ),
+        fillColor: Colors.grey[100],
+        filled: true,
         contentPadding: const EdgeInsets.symmetric(
           horizontal: Dimens.spacingMedium,
           vertical: Dimens.spacingRegular,
         ),
+        border: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(Dimens.radiusRegular),
+          borderSide: BorderSide.none,
+        ),
+        enabledBorder: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(Dimens.radiusRegular),
+          borderSide: BorderSide.none,
+        ),
+        focusedBorder: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(Dimens.radiusRegular),
+          borderSide: const BorderSide(color: AppColors.primaryColor, width: 1.0),
+        ),
+        hintStyle: TextStyles.body.copyWith(
+          color: AppColors.textSecondaryLight,
+          fontWeight: FontWeight.w400,
+        ),
+        labelStyle: TextStyles.body.copyWith(
+          color: AppColors.primaryColor,
+          fontWeight: FontWeight.w500,
+        ),
       ),
+      // iOS风格按钮
       elevatedButtonTheme: ElevatedButtonThemeData(
         style: ElevatedButton.styleFrom(
+          backgroundColor: AppColors.primaryColor,
+          foregroundColor: Colors.white,
           minimumSize: const Size.fromHeight(Dimens.buttonHeight),
+          elevation: 0,
           shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.circular(Dimens.radiusRegular),
           ),
+          padding: const EdgeInsets.symmetric(
+            horizontal: Dimens.spacingMedium,
+            vertical: Dimens.spacingRegular,
+          ),
+          textStyle: TextStyles.body,
         ),
+      ),
+      // iOS风格文本按钮
+      textButtonTheme: TextButtonThemeData(
+        style: TextButton.styleFrom(
+          foregroundColor: AppColors.primaryColor,
+          padding: const EdgeInsets.symmetric(
+            horizontal: Dimens.spacingMedium,
+            vertical: Dimens.spacingRegular,
+          ),
+          textStyle: TextStyles.body,
+        ),
+      ),
+      // iOS风格滑动组件
+      sliderTheme: SliderThemeData(
+        activeTrackColor: AppColors.primaryColor,
+        inactiveTrackColor: AppColors.primaryColor.withOpacity(0.2),
+        thumbColor: AppColors.primaryColor,
+        overlayColor: AppColors.primaryColor.withOpacity(0.1),
+      ),
+      // iOS风格切换开关
+      switchTheme: SwitchThemeData(
+        thumbColor: MaterialStateProperty.resolveWith<Color>((Set<MaterialState> states) {
+          if (states.contains(MaterialState.selected)) {
+            return Colors.white;
+          }
+          return Colors.white;
+        }),
+        trackColor: MaterialStateProperty.resolveWith<Color>((Set<MaterialState> states) {
+          if (states.contains(MaterialState.selected)) {
+            return AppColors.accentColor;
+          }
+          return Colors.grey[300]!;
+        }),
+      ),
+      // iOS风格进度指示器
+      progressIndicatorTheme: const ProgressIndicatorThemeData(
+        color: AppColors.primaryColor,
       ),
     );
   }
@@ -207,6 +356,7 @@ class AppTheme {
     return ThemeData(
       brightness: Brightness.dark,
       primaryColor: AppColors.primaryColor,
+      primarySwatch: Colors.blue,
       colorScheme: const ColorScheme.dark(
         primary: AppColors.primaryLightColor,
         secondary: AppColors.accentColor,
@@ -218,43 +368,122 @@ class AppTheme {
       ),
       scaffoldBackgroundColor: AppColors.backgroundDark,
       cardColor: AppColors.cardDark,
-      dividerColor: Colors.grey[800],
+      dividerColor: AppColors.separatorDark,
+      indicatorColor: AppColors.primaryLightColor,
       fontFamily: defaultFontFamily,
       textTheme: _getTextTheme(Brightness.dark),
-      appBarTheme: const AppBarTheme(
+      // iOS风格的AppBar (深色模式)
+      appBarTheme: AppBarTheme(
         backgroundColor: AppColors.cardDark,
-        foregroundColor: AppColors.textPrimaryDark,
-        elevation: Dimens.cardElevation,
+        foregroundColor: AppColors.primaryLightColor,
+        elevation: 0,
+        centerTitle: true,
+        titleTextStyle: TextStyles.headline.copyWith(
+          color: AppColors.textPrimaryDark,
+        ),
+        iconTheme: const IconThemeData(
+          color: AppColors.primaryLightColor,
+        ),
       ),
+      // iOS风格的底部导航栏 (深色模式)
       bottomNavigationBarTheme: const BottomNavigationBarThemeData(
         selectedItemColor: AppColors.primaryLightColor,
         unselectedItemColor: AppColors.textSecondaryDark,
         backgroundColor: AppColors.cardDark,
-        elevation: Dimens.cardElevation,
+        elevation: 0,
+        type: BottomNavigationBarType.fixed,
+        showSelectedLabels: true,
+        showUnselectedLabels: true,
+        selectedLabelStyle: TextStyles.caption2,
+        unselectedLabelStyle: TextStyles.caption2,
       ),
+      // 无阴影扁平卡片 (深色模式)
       cardTheme: CardTheme(
-        elevation: Dimens.cardElevation,
+        elevation: 0,
         shape: RoundedRectangleBorder(
           borderRadius: BorderRadius.circular(Dimens.radiusMedium),
+          side: const BorderSide(
+            color: AppColors.separatorDark,
+            width: 0.5,
+          ),
         ),
         color: AppColors.cardDark,
       ),
+      // iOS风格输入框 (深色模式)
       inputDecorationTheme: InputDecorationTheme(
-        border: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(Dimens.radiusRegular),
-        ),
+        fillColor: Colors.grey[900],
+        filled: true,
         contentPadding: const EdgeInsets.symmetric(
           horizontal: Dimens.spacingMedium,
           vertical: Dimens.spacingRegular,
         ),
+        border: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(Dimens.radiusRegular),
+          borderSide: BorderSide.none,
+        ),
+        enabledBorder: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(Dimens.radiusRegular),
+          borderSide: BorderSide.none,
+        ),
+        focusedBorder: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(Dimens.radiusRegular),
+          borderSide: const BorderSide(color: AppColors.primaryLightColor, width: 1.0),
+        ),
+        hintStyle: TextStyles.body.copyWith(color: AppColors.textSecondaryDark),
       ),
+      // iOS风格按钮 (深色模式)
       elevatedButtonTheme: ElevatedButtonThemeData(
         style: ElevatedButton.styleFrom(
+          backgroundColor: AppColors.primaryLightColor,
+          foregroundColor: Colors.black,
           minimumSize: const Size.fromHeight(Dimens.buttonHeight),
+          elevation: 0,
           shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.circular(Dimens.radiusRegular),
           ),
+          padding: const EdgeInsets.symmetric(
+            horizontal: Dimens.spacingMedium,
+            vertical: Dimens.spacingRegular,
+          ),
+          textStyle: TextStyles.body,
         ),
+      ),
+      // iOS风格文本按钮 (深色模式)
+      textButtonTheme: TextButtonThemeData(
+        style: TextButton.styleFrom(
+          foregroundColor: AppColors.primaryLightColor,
+          padding: const EdgeInsets.symmetric(
+            horizontal: Dimens.spacingMedium,
+            vertical: Dimens.spacingRegular,
+          ),
+          textStyle: TextStyles.body,
+        ),
+      ),
+      // iOS风格滑动组件 (深色模式)
+      sliderTheme: SliderThemeData(
+        activeTrackColor: AppColors.primaryLightColor,
+        inactiveTrackColor: AppColors.primaryLightColor.withOpacity(0.2),
+        thumbColor: AppColors.primaryLightColor,
+        overlayColor: AppColors.primaryLightColor.withOpacity(0.1),
+      ),
+      // iOS风格切换开关 (深色模式)
+      switchTheme: SwitchThemeData(
+        thumbColor: MaterialStateProperty.resolveWith<Color>((Set<MaterialState> states) {
+          if (states.contains(MaterialState.selected)) {
+            return Colors.white;
+          }
+          return Colors.white;
+        }),
+        trackColor: MaterialStateProperty.resolveWith<Color>((Set<MaterialState> states) {
+          if (states.contains(MaterialState.selected)) {
+            return AppColors.accentColor;
+          }
+          return Colors.grey[800]!;
+        }),
+      ),
+      // iOS风格进度指示器 (深色模式)
+      progressIndicatorTheme: const ProgressIndicatorThemeData(
+        color: AppColors.primaryLightColor,
       ),
     );
   }
