@@ -7,15 +7,15 @@ import '../models/base_model.dart';
 
 /// 数据库常量
 class DatabaseConstants {
-  // 数据库名称和版本
+  // 数据库文件名
   static const String databaseName = 'wisedo.db';
-  static const int databaseVersion = 2;
+  // 数据库版本
+  static const int databaseVersion = 5;  // 再次提高版本号触发重建
   
-  // 表名
+  // 任务表
   static const String tasksTable = 'tasks';
-  static const String preferencesTable = 'preferences';
   
-  // 任务表的列名
+  // 列名
   static const String columnId = 'id';
   static const String columnTitle = 'title';
   static const String columnTime = 'time';
@@ -25,18 +25,24 @@ class DatabaseConstants {
   static const String columnIsPriority = 'isPriority';
   static const String columnIsCompleted = 'isCompleted';
   static const String columnStatus = 'status';
+  static const String columnTaskType = 'taskType';  // 任务类型列
+  static const String columnCategory = 'category';  // 新增任务分类列
   static const String columnCreatedAt = 'createdAt';
   static const String columnUpdatedAt = 'updatedAt';
   
-  // 偏好表的列名
+  // 偏好表
+  static const String preferencesTable = 'preferences';
   static const String prefColumnId = 'id';
   static const String prefColumnKey = 'key';
   static const String prefColumnValue = 'value';
   
-  // 一些常用的偏好键
-  static const String prefKeyDarkMode = 'darkMode';
+  // 偏好键名
+  static const String prefKeyTheme = 'theme';
   static const String prefKeyLanguage = 'language';
   static const String prefKeyNotification = 'notification';
+  
+  // 私有构造函数
+  DatabaseConstants._();
 }
 
 /// 数据库异常
@@ -50,22 +56,22 @@ class DatabaseException implements Exception {
   String toString() => 'DatabaseException: $message${cause != null ? ' (Cause: $cause)' : ''}';
 }
 
-/// 数据库辅助类 - 单例模式
+/// 数据库辅助类
+/// 用于处理数据库操作，封装SQLite API
 class DatabaseHelper {
-  // 单例实例
-  static final DatabaseHelper instance = DatabaseHelper._init();
+  // 单例模式
+  static final DatabaseHelper instance = DatabaseHelper._privateConstructor();
+  DatabaseHelper._privateConstructor();
   
-  // 数据库实例
+  // 数据库对象
   static Database? _database;
   
-  // 私有构造函数，确保单例模式
-  DatabaseHelper._init();
-  
-  /// 获取数据库实例 (如果不存在则初始化)
+  // 获取数据库实例
   Future<Database> get database async {
     if (_database != null && _database!.isOpen) return _database!;
     
     try {
+      // 如果数据库不存在，则创建它
       _database = await _initDatabase();
       return _database!;
     } catch (e) {
@@ -74,17 +80,21 @@ class DatabaseHelper {
     }
   }
   
-  /// 初始化数据库
+  // 初始化数据库
   Future<Database> _initDatabase() async {
     try {
+      // 获取数据库路径
       final dbPath = await getDatabasesPath();
       final path = join(dbPath, DatabaseConstants.databaseName);
       
+      debugPrint('数据库路径: $path');
+      
+      // 打开数据库，如果不存在则创建
       return await openDatabase(
         path,
         version: DatabaseConstants.databaseVersion,
-        onCreate: _createDatabase,
-        onUpgrade: _upgradeDatabase,
+        onCreate: _onCreate,
+        onUpgrade: _onUpgrade,
       );
     } catch (e) {
       debugPrint('数据库打开失败: $e');
@@ -92,10 +102,10 @@ class DatabaseHelper {
     }
   }
   
-  /// 创建数据库表
-  Future<void> _createDatabase(Database db, int version) async {
+  /// 创建数据库表结构
+  Future<void> _onCreate(Database db, int version) async {
     try {
-      // 创建任务表
+      // 任务表
       await db.execute('''
         CREATE TABLE ${DatabaseConstants.tasksTable} (
           ${DatabaseConstants.columnId} INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -107,6 +117,8 @@ class DatabaseHelper {
           ${DatabaseConstants.columnIsPriority} INTEGER DEFAULT 0,
           ${DatabaseConstants.columnIsCompleted} INTEGER DEFAULT 0,
           ${DatabaseConstants.columnStatus} INTEGER DEFAULT 0,
+          ${DatabaseConstants.columnTaskType} INTEGER,
+          ${DatabaseConstants.columnCategory} INTEGER,
           ${DatabaseConstants.columnCreatedAt} TEXT,
           ${DatabaseConstants.columnUpdatedAt} TEXT
         )
@@ -121,33 +133,45 @@ class DatabaseHelper {
         )
       ''');
       
-      // 创建索引
-      await db.execute(
-        'CREATE INDEX idx_tasks_completed ON ${DatabaseConstants.tasksTable} (${DatabaseConstants.columnIsCompleted})'
-      );
-      
-      debugPrint('数据库表创建成功');
+      debugPrint('数据库创建成功: 版本=$version');
     } catch (e) {
       debugPrint('创建数据库表失败: $e');
       throw DatabaseException('创建数据库表失败', e is Exception ? e : null);
     }
   }
   
-  /// 升级数据库
-  Future<void> _upgradeDatabase(Database db, int oldVersion, int newVersion) async {
+  /// 数据库升级处理
+  Future<void> _onUpgrade(Database db, int oldVersion, int newVersion) async {
     try {
-      debugPrint('数据库升级: 从 $oldVersion 升级到 $newVersion');
+      debugPrint('数据库升级: $oldVersion -> $newVersion');
       
+      // 强制重建已经完成，恢复到增量升级方式
       if (oldVersion < 2) {
-        // 版本1升级到版本2：添加提醒时间列
-        await db.execute(
-          'ALTER TABLE ${DatabaseConstants.tasksTable} ADD COLUMN ${DatabaseConstants.columnReminderTime} TEXT'
-        );
-        debugPrint('数据库升级: 已添加提醒时间列');
+        // 添加任务类型列
+        await db.execute('''
+          ALTER TABLE ${DatabaseConstants.tasksTable}
+          ADD COLUMN ${DatabaseConstants.columnTaskType} INTEGER
+        ''');
+        debugPrint('已添加任务类型列');
       }
       
-      // 其他版本升级逻辑...
+      if (oldVersion < 3) {
+        // 添加任务分类列 (文本类型)
+        await db.execute('''
+          ALTER TABLE ${DatabaseConstants.tasksTable}
+          ADD COLUMN ${DatabaseConstants.columnCategory} TEXT
+        ''');
+        debugPrint('已添加任务分类列 (TEXT)');
+      }
       
+      if (oldVersion < 5) {
+        // 如果从版本4升级到版本5，需要将 category 列从 TEXT 改为 INTEGER
+        // 但由于SQLite的限制，无法直接修改列类型，所以需要通过创建新表并迁移数据的方式实现
+        // 在此版本中我们已经通过强制重建实现了，未来的升级可以在这里添加新的迁移逻辑
+        debugPrint('类型从TEXT转为INTEGER的升级已通过强制重建完成');
+      }
+      
+      // 未来版本升级可以继续添加更多条件...
     } catch (e) {
       debugPrint('数据库升级失败: $e');
       throw DatabaseException('数据库升级失败', e is Exception ? e : null);

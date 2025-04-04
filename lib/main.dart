@@ -140,23 +140,36 @@ class _MyAppState extends State<MyApp> {
               : theme.textTheme.bodySmall!.color!.withOpacity(0.6);
           
           return Scaffold(
-            body: CupertinoTabScaffold(
-              tabBar: CupertinoTabBar(
+            body: IndexedStack(
+              index: _currentIndex,
+              children: [
+                const HomeScreen(),
+                const QuadrantScreen(),
+                const StatsScreen(),
+                SettingsScreen(onLanguageChanged: _changeLanguage),
+              ],
+            ),
+            bottomNavigationBar: Theme(
+              data: Theme.of(context).copyWith(
+                highlightColor: Colors.transparent,
+                splashColor: Colors.transparent,
+              ),
+              child: BottomNavigationBar(
                 currentIndex: _currentIndex,
                 onTap: (index) {
                   setState(() {
                     _currentIndex = index;
                   });
                 },
-                activeColor: activeColor,
-                inactiveColor: inactiveColor,
+                type: BottomNavigationBarType.fixed,
                 backgroundColor: theme.bottomNavigationBarTheme.backgroundColor,
-                border: Border(
-                  top: BorderSide(
-                    color: theme.dividerColor,
-                    width: 0.5,
-                  ),
-                ),
+                selectedItemColor: activeColor,
+                unselectedItemColor: inactiveColor,
+                showSelectedLabels: true,
+                showUnselectedLabels: true,
+                selectedLabelStyle: TextStyle(height: 0), // 移除标签下的横线
+                unselectedLabelStyle: TextStyle(height: 0), // 移除标签下的横线
+                elevation: 0,
                 items: [
                   BottomNavigationBarItem(
                     icon: Icon(CupertinoIcons.home),
@@ -176,13 +189,6 @@ class _MyAppState extends State<MyApp> {
                   ),
                 ],
               ),
-              tabBuilder: (context, index) {
-                return CupertinoTabView(
-                  builder: (context) {
-                    return _buildTabContent(index);
-                  },
-                );
-              },
             ),
           );
         }

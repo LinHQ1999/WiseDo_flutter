@@ -98,5 +98,12 @@
   "taskSetDeadline": "设置截止日期",
   "taskRemindMe": "提醒我",
   "taskTitleCannotBeEmpty": "任务标题不能为空",
-  "failedToAddTask": "添加任务失败"
+  "failedToAddTask": "添加任务失败",
+  
+  "categoryWork": "工作",
+  "categoryLife": "生活",
+  "categoryStudy": "学习",
+  "categoryHealth": "健康",
+  "categorySocial": "社交",
+  "categoryOther": "其他"
 } 

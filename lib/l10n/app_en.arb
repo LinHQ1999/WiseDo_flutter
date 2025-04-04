@@ -98,5 +98,12 @@
   "taskSetDeadline": "Set deadline",
   "taskRemindMe": "Remind me",
   "taskTitleCannotBeEmpty": "Task title cannot be empty",
-  "failedToAddTask": "Failed to add task"
+  "failedToAddTask": "Failed to add task",
+  
+  "categoryWork": "Work",
+  "categoryLife": "Life",
+  "categoryStudy": "Study",
+  "categoryHealth": "Health",
+  "categorySocial": "Social",
+  "categoryOther": "Other"
 } 

@@ -101,6 +101,8 @@ class _TaskDetailScreenState extends State<TaskDetailScreen> {
       deadline: formattedDeadline,
       reminderTime: formattedReminderTime,
       isPriority: _task.isPriority,
+      category: _task.taskCategory,
+      taskType: _task.type,
     );
     
     try {
@@ -298,6 +300,41 @@ class _TaskDetailScreenState extends State<TaskDetailScreen> {
     }
   }
 
+  /// 显示分类选择器
+  void _showCategoryPicker() {
+    showCupertinoModalPopup(
+      context: context,
+      builder: (context) {
+        return CupertinoActionSheet(
+          title: Text('选择任务分类'),
+          actions: TaskCategory.values.map((category) {
+            return CupertinoActionSheetAction(
+              child: Row(
+                children: [
+                  Icon(category.icon, color: category.color),
+                  SizedBox(width: 16),
+                  Text(category.getLocalizedName(context)),
+                ],
+              ),
+              onPressed: () {
+                setState(() {
+                  _task = _task.copyWith(category: category);
+                });
+                Navigator.pop(context);
+              },
+            );
+          }).toList(),
+          cancelButton: CupertinoActionSheetAction(
+            child: Text('取消'),
+            onPressed: () {
+              Navigator.pop(context);
+            },
+          ),
+        );
+      },
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
@@ -379,6 +416,16 @@ class _TaskDetailScreenState extends State<TaskDetailScreen> {
                     ),
                   ),
                   const SizedBox(width: 16),
+                  
+                  // 添加任务分类图标
+                  Padding(
+                    padding: const EdgeInsets.only(right: 8.0),
+                    child: Icon(
+                      _task.taskCategory.icon,
+                      color: _task.taskCategory.color,
+                      size: 24, // 可以调整图标大小
+                    ),
+                  ),
                   
                   // 任务标题输入
                   Expanded(
@@ -621,6 +668,50 @@ class _TaskDetailScreenState extends State<TaskDetailScreen> {
                   },
                 ),
               ],
+            ),
+          ),
+          
+          SizedBox(height: 16),
+          
+          // 新增：任务分类选择
+          Card(
+            elevation: 0,
+            color: cardColor,
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(16),
+              side: BorderSide(
+                color: subtleColor.withOpacity(0.2),
+                width: 1,
+              ),
+            ),
+            child: ListTile(
+              leading: Icon(
+                _task.taskCategory.icon, // 显示当前分类图标
+                color: _task.taskCategory.color, // 使用分类颜色
+                size: 26,
+              ),
+              title: Text('分类', style: theme.textTheme.bodyLarge?.copyWith(
+                fontWeight: FontWeight.w500,
+              )),
+              trailing: Row(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Text(
+                    _task.taskCategory.getLocalizedName(context), // 显示当前分类名称
+                    style: TextStyle(
+                      color: theme.textTheme.bodyMedium?.color?.withOpacity(0.7),
+                      fontWeight: FontWeight.w500,
+                    ),
+                  ),
+                  SizedBox(width: 8),
+                  Icon(
+                    CupertinoIcons.right_chevron,
+                    color: theme.textTheme.bodyMedium?.color?.withOpacity(0.4),
+                    size: 18,
+                  ),
+                ],
+              ),
+              onTap: _showCategoryPicker, // 点击时弹出分类选择器
             ),
           ),
           
